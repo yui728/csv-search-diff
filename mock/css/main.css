@@ -1,0 +1,15 @@
+@viewport {
+    width: device-width;
+    initial-scale: 1;
+}
+
+body {
+    font-family: 'Noto Sans JP', sans-serif;
+}
+
+header {
+    color:white;
+    background: linear-gradient(#0066CC, white);
+    font-size: 2em;
+    padding: 0 0 0 1em;
+}
