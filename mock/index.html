@@ -15,22 +15,27 @@
     <body>
         <header>CSVを比べたい</header>
         <main>
-            <div>
-                <form method="POST" action="/">
-                    <div class="form-group">
-                        <label for="csv1_input">CSV1</label>
-                        <input type="file" id="csv1_input" name="csv1" class="form-control" />
-                        <input type="checkbox" id="csv1_no_header" name="csv1_no_header" class="form-check-input" /><label for="csv1_no_header" class="form-check-label">ヘッダーなし</label>
-                    </div>
-                    <div class="form-group">
-                        <label for="csv2_input">CSV2</label>
-                        <input type="file" id="csv2_input" name="csv2" class="form-control" />
-                        <input type="checkbox" id="csv2_no_header" name="csv2_no_header" class="for-check-input" /><label for="csv2_no_header" class="form-check-label">ヘッダーなし</label>
-                    </div>
-                    <div>
-                        <input type="submit" value="次へ" />
-                    </div>
-                </form>
+            <div class="container">
+                <div class="col-sm-8 justify-content-center">
+                    <form method="POST" action="/">
+                        <div class="form-group">
+                            <label for="csv1_input" class="col-sm-1">CSV1</label>
+                            <input type="file" id="csv1_input" name="csv1" class="form-control" />
+                            <div class="form-check">
+                                <input type="checkbox" id="csv1_no_header" name="csv1_no_header" class="form-check-input" />
+                                <label for="csv1_no_header" class="form-check-label">ヘッダーなし</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="csv2_input" class="col-sm-1">CSV2</label>
+                            <input type="file" id="csv2_input" name="csv2" class="form-control" />
+                            <div class="form-check">
+                                <input type="checkbox" id="csv2_no_header" name="csv2_no_header" class="form-check-input" />
+                                <label for="csv2_no_header" class="form-check-label">ヘッダーなし</label>
+                            </div>
+                        <input type="submit" class="btn btn-primary" value="次へ" />
+                    </form>
+                </div>
             </div>
         </main>
     </body>
