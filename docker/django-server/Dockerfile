@@ -7,7 +7,7 @@ RUN apt-get update \
 	nginx \
 	&& rm -rf /var/lib/apt/lists/*
 
-WORKDIR /usr/src/app
+WORKDIR /usr/src/app/csv-search-diff/
 COPY ./src/requirements.txt .
 RUN pip install --upgrade pip && \
   pip install -r requirements.txt
