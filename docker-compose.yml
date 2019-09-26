@@ -1,0 +1,38 @@
+version: '3.7'
+
+services:
+  django-server:
+#    restart: always
+    build:
+      context: .
+      dockerfile: ./docker/django-server/Dockerfile
+    environment:
+      DJANGO_SETTINGS_MODULE: apps.production
+    expose:
+      - "8000"
+    volumes:
+      - type: bind
+        source: ./src
+        target: /usr/src/app
+      - "staticdata:/var/www/csv-search-diff/static/"
+      - "/var/log/csv-search-diff/:/var/log/"
+      # - "~/Projects/logs/csv-search-diff/:/var/log/"
+    command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py collectstatic --clear --noinput && gunicorn config.wsgi -b 0.0.0.0:8000"
+    container_name: server-csv-search-diff
+
+  nginx:
+#    restart: always
+    image: nginx
+    ports:
+      - "8080:80"
+    depends_on:
+      - django-server
+    volumes:
+      - "./docker/nginx/:/etc/nginx/"
+      - "staticdata:/var/www/static/"
+      - "/var/log/csv-search-diff/:/var/log/nginx/"
+      # - "~/Projects/logs/csv-search-diff/:/var/log/nginx/"
+    container_name: nginx-csv-search-diff
+
+volumes:
+  staticdata:
