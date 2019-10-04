@@ -14,11 +14,11 @@ services:
       - type: bind
         source: ./src
         target: /usr/src/app
-      - "staticdata:/var/www/csv-search-diff/static/"
-      - "/var/log/csv-search-diff/:/var/log/"
-      # - "~/Projects/logs/csv-search-diff/:/var/log/"
+      - "staticdata:/var/www/csv_search_diff/static/"
+      - "/var/log/csv_search_diff/:/var/log/"
+      # - "~/Projects/logs/csv_search_diff/:/var/log/"
     command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py collectstatic --clear --noinput && gunicorn config.wsgi -b 0.0.0.0:8000"
-    container_name: server-csv-search-diff
+    container_name: server-csv_search_diff
 
   nginx:
 #    restart: always
@@ -30,9 +30,9 @@ services:
     volumes:
       - "./docker/nginx/:/etc/nginx/"
       - "staticdata:/var/www/static/"
-      - "/var/log/csv-search-diff/:/var/log/nginx/"
-      # - "~/Projects/logs/csv-search-diff/:/var/log/nginx/"
-    container_name: nginx-csv-search-diff
+      - "/var/log/csv_search_diff/:/var/log/nginx/"
+      # - "~/Projects/logs/csv_search_diff/:/var/log/nginx/"
+    container_name: nginx-csv_search_diff
 
 volumes:
   staticdata:

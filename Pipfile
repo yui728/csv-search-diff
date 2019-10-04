@@ -8,6 +8,8 @@ verify_ssl = true
 [packages]
 django = "*"
 django-bootstrap4 = "*"
+pandaas = "*"
+pandas = "*"
 
 [requires]
 python_version = "3.7"

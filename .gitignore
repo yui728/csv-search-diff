@@ -83,7 +83,7 @@ celerybeat-schedule
 
 # Environments
 .env
-.venv
+src/csv_search_diff/.venv
 env/
 venv/
 ENV/
@@ -104,3 +104,4 @@ venv.bak/
 .mypy_cache/
 
 *.code-workspace
+.venv
