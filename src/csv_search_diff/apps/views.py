@@ -45,10 +45,15 @@ class ResultView(View):
         return redirect('/')
 
     def post(self, request, *args, **kwargs):
+        result = self.get_result_dataframe()
         response = HttpResponse(content_type='text/csv; charset=utf8')
         filename = urllib.parse.quote(u'resutlt.csv'.encode('utf8'))
         response['Content-Disposition'] = 'attachment; filename*=UTF-8\'\'{}'.format(filename)
         writer = csv.writer(response)
+        writer.wtiterow(result.columns)
+        for row in result.to_numpy():
+            writer.writerow(row)
+        return response
 
     def get_result_dataframe(self) -> pd.DataFrame:
         csv1_key_col = ['ヘッダー4', 'ヘッダー5']
@@ -81,28 +86,31 @@ class ResultView(View):
             '○', '○', '', '', ''
         ]
 
-        columns = []
+        data = {}
         header_base = '{} {}:{}'
         exist_base = '{}に{}が存在'
         CSV1_NAME = 'CSV1'
         CSV2_NAME = 'CSV2'
         KEY_HEADER = 'キー項目'
         DIFF_HEADER = '比較項目'
-        for col in csv1_key_col:
-            columns.append(header_base.format(CSV1_NAME, KEY_HEADER, col))
-        for col in csv2_key_col:
-            columns.append(header_base.format(CSV2_NAME, KEY_HEADER, col))
-        for col in csv1_diff_col:
-            columns.append(header_base.format(CSV1_NAME, DIFF_HEADER, col))
-        for col in csv2_diff_col:
-            columns.append(header_base.format(CSV2_NAME, DIFF_HEADER, col))
-        columns.append(exist_base.format(CSV1_NAME, KEY_HEADER))
-        columns.append(exist_base.format(CSV2_NAME, KEY_HEADER))
-        columns.append('値の一致')
+        for i, col in enumerate(csv1_key_col):
+            col_name = header_base.format(CSV1_NAME, KEY_HEADER, col)
+            data[col_name] = csv1_key_col[i]
+        for i, col in enumerate(csv2_key_col):
+            col_name = header_base.format(CSV2_NAME, KEY_HEADER, col)
+            data[col_name] = csv2_key_col[i]
+        for i, col in enumerate(csv1_diff_col):
+            col_name = header_base.format(CSV1_NAME, DIFF_HEADER, col)
+            data[col_name] = csv1_diff_col[i]
+        for i, col in enumerate(csv2_diff_col):
+            col_name = header_base.format(CSV2_NAME, DIFF_HEADER, col)
+            data[col_name] = csv2_diff_col[i]
+        data[exist_base.format(CSV1_NAME, KEY_HEADER)] = csv1_exists
+        data[exist_base.format(CSV2_NAME, KEY_HEADER)] = csv2_exists
+        data['値の一致'] = value_match
 
+        result = pd.DataFrame(data=data)
 
-        result = pd.DataFrame(
-                              )
         return result
 
 

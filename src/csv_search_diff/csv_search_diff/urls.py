@@ -20,5 +20,5 @@ from . import base
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('apps.urls'))
+    path('/', include('apps.urls'))
 ] + static(base.STATIC_URL, document_root=base.STATIC_ROOT)

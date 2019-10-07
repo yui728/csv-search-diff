@@ -52,7 +52,10 @@ class AppsViewTest(TestCase):
 
     def test_result_post(self):
         response = self.client.post('/result')
-        # self.
+        self.assertEquals(
+            response.get('Content-Disposition'),
+            "attachment; filename=result.csv"
+        )
 
 
 
