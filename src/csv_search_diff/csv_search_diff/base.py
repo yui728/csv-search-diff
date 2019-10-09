@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
+import logging
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -53,7 +54,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            os.path.join('templates', BASE_DIR)
+            os.path.join(BASE_DIR, 'templates')
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -108,3 +109,43 @@ USE_TZ = True
 STATIC_ROOT = '/var/www/{}/static'.format(PROJECT_NAME)
 
 STATIC_URL = '/static/'
+
+LOGGING = {
+    # バージョンは'1'固定
+    'version': 1,
+    # 既存のログは無効化しない
+    'disable_existing_loggers': False,
+    # ログフォーマット7Ω
+    'formatters': {
+        # 本番用
+        'production': {
+            'format': '%(asctime)s [%(levelname)s] %(process)d %(thread)d '
+            '%(pathname)s:%(lineno)d %(message)s'
+        },
+    },
+    # ハンドラ
+    'handlers': {
+        # ファイル出力用ハンドラ
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': '/var/log/{}.log'.format(PROJECT_NAME),
+            'formatter': 'production',
+        }
+    },
+    # ロガー
+    'loggers': {
+        # 自作アプリケーション用ロガー
+        '': {
+            'handlers': ['file'],
+            'level': 'INFO',
+            'propagate': False
+        },
+        # Django本体のロガー
+        'django': {
+            'handlers': ['file'],
+            'level': 'INFO',
+            'propagate': False
+        },
+    },
+}

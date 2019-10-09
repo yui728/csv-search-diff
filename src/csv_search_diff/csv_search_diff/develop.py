@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 
 import os
 from .base import *
+from pathlib import Path
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -25,3 +26,4 @@ DATABASES = {
     }
 }
 
+LOGGING['handlers']['file']['filename'] = '{}/{}.log'.format(Path(__file__).parents[1].joinpath('logs'), PROJECT_NAME)
