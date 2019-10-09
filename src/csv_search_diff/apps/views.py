@@ -10,10 +10,10 @@ import pandas as pd
 
 class TopView(View):
     def get(self, request, *args, **kwargs):
-        return render(request, '/pages/index.html')
+        return render(request, 'pages/index.html')
 
     def post(self, request, *args, **kwargs):
-        return render(request, '/pages/setting-diff-column.html')
+        return render(request, 'pages/setting-diff-column.html')
 
 
 class SettingDiffColumnView(View):

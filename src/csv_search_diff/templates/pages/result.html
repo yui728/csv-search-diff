@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}CSVを比較する：比較結果{% endblock %}
+{% block content %}
+<sction>
+    <p class="h4">比較結果</p>
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead class="thead-light">
+                <tr>
+                    <th scope="col" class="text-nowrap">CSV1 キー項目:ヘッダー4</th>
+                    <th scope="col" class="text-nowrap">CSV1 キー項目:ヘッダー5</th>
+                    <th scope="col" class="text-nowrap">CSV2 キー項目:ヘッダー4</th>
+                    <th scope="col" class="text-nowrap">CSV2 キー項目:ヘッダー5</th>
+                    <th scope="col" class="text-nowrap">CSV1 比較項目:ヘッダー1</th>
+                    <th scope="col" class="text-nowrap">CSV1 比較項目:ヘッダー2</th>
+                    <th scope="col" class="text-nowrap">CSV2 比較項目:ヘッダー1</th>
+                    <th scope="col" class="text-nowrap">CSV2 比較項目:ヘッダー2</th>
+                    <th scope="col" class="text-nowrap">CSV1にキー項目が存在</th>
+                    <th scope="col" class="text-nowrap">CSV2にキー項目が存在</th>
+                    <th scope="col" class="text-nowrap">値の一致</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1234</td>
+                    <td>abcde</td>
+                    <td>1234</td>
+                    <td>abcde</td>
+                    <td>XXX</td>
+                    <td>あああ</td>
+                    <td>XXX</td>
+                    <td>あああ</td>
+                    <td>○</td>
+                    <td>○</td>
+                    <td>○</td>
+                </tr>
+                <tr>
+                    <td>5678</td>
+                    <td>abcdefg</td>
+                    <td>5678</td>
+                    <td>abcdefg</td>
+                    <td>YYY</td>
+                    <td>いいい</td>
+                    <td>YYY</td>
+                    <td>いいい</td>
+                    <td>○</td>
+                    <td>○</td>
+                    <td>○</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</sction>
+
+<section>
+    <form method="POST" action="/">
+         <div class="form-group row justify-content-center">
+            <div>
+                <input type="button" class="btn btn-outline-secondary" id="page_back" value="戻る" />
+                <input type="submit" class="btn btn-primary" value="結果をダウンロード" />
+            </div>
+        </div>
+    </form>
+</section>
+{% endblock %}

@@ -13,10 +13,10 @@
         {# --- css --- #}
         <link href="css/main.css" rel="stylesheet">
         {% block extra_css %}{% endblock %}
-        <title>{% block  %}{% endblock %}</title>
+        <title>{% block title %}{% endblock %}</title>
     </head>
     <body>
-        <header>{% block title %}{% endblock %}</header>
+        <header>{{ title }}</header>
         <main>
             <div class="container">
                 <div class="col-sm-10 justify-content-center">
