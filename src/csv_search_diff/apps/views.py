@@ -6,6 +6,7 @@ from django.views import View
 import urllib
 import csv
 import pandas as pd
+from django.urls import reverse
 
 
 class TopView(View):
@@ -50,32 +51,68 @@ class ResultView(View):
         filename = urllib.parse.quote(u'resutlt.csv'.encode('utf8'))
         response['Content-Disposition'] = 'attachment; filename*=UTF-8\'\'{}'.format(filename)
         writer = csv.writer(response)
-        writer.wtiterow(result.columns)
+        writer.writerow(result.columns)
         for row in result.to_numpy():
             writer.writerow(row)
         return response
 
-    def get_result_dataframe(self) -> pd.DataFrame:
-        csv1_key_col = ['ヘッダー4', 'ヘッダー5']
-        csv2_key_col = ['ヘッダー4', 'ヘッダー5']
-        csv1_diff_col = ['ヘッダー1', 'ヘッダー2']
-        csv2_diff_col = ['ヘッダー1', 'ヘッダー2']
-        csv1_key_vals = [
-            ['1234', '5678', '9012', '3456', ''],
-            ['abcde', 'abcdefg', 'abcdefgh', 'ABCD', '']
-        ]
-        csv2_key_vals = [
-            ['1234', '5678', '9012', '', '3345'],
-            ['abcde', 'abcdefg', 'abcdefgh', '', 'AABC']
-        ]
-        csv1_diff_vals = [
-            ['XXX', 'YYY', 'ZZZ', 'AAA', ''],
-            ['あああ', 'いいい', 'ううう', 'えええ', '']
-        ]
-        csv2_diff_vals = [
-            ['XXX', 'YYY', 'XYZ', '', 'AAB'],
-            ['あああ', 'いいい', 'あいう', '', 'ああい']
-        ]
+
+class ResultCsvDownloadView(View):
+    def get(self, request, *args, **kwargs):
+        return redirect(reverse('apps:index'))
+
+    def post(self, request, *args, **kwargs):
+        csv1 = pd.DataFrame({
+            'ヘッダー1': ['1234', '5678', '9012', '3456', ''],
+            'ヘッダー2': ['abcde', 'abcdefg', 'abcdefgh', 'ABCD', ''],
+            'ヘッダー3': ['AAA', 'BBB', 'CCC', 'DDD', 'EEE'],
+            'ヘッダー4': ['XXX', 'YYY', 'ZZZ', 'AAA', ''],
+            'ヘッダー5': ['あああ', 'いいい', 'ううう', 'えええ', '']
+        })
+        csv2 = pd.DataFrame({
+            'ヘッダー1': ['1234', '5678', '9012', '', '3345'],
+            'ヘッダー2': ['abcde', 'abcdefg', 'abcdefgh', '', 'AABC'],
+            'ヘッダー3': ['AAA', 'BBB', 'CCC', 'DDD', 'EEE'],
+            'ヘッダー4': ['XXX', 'YYY', 'XYZ', '', 'AAB'],
+            'ヘッダー5': ['あああ', 'いいい', 'あいう', '', 'ああい']
+        })
+        diff_columns = {
+            'csv1': ['ヘッダー1', 'ヘッダー2'],
+            'csv2': ['ヘッダー1', 'ヘッダー2']
+        }
+        key_columns = {
+            'csv1': ['ヘッダー4', 'ヘッダー5'],
+            'csv2': ['ヘッダー4', 'ヘッダー5']
+        }
+        df_creator = ResultDataFrameCreator(csv1, csv2, diff_columns, key_columns)
+        result = self.get_result_dataframe()
+        response = HttpResponse(content_type='text/csv; charset=utf8')
+        filename = urllib.parse.quote(u'result.csv'.encode('utf8'))
+        response['Content-Disposition'] = 'attachment; filename*=UTF-8\'\'{}'.format(filename)
+        writer = csv.writer(response)
+        writer.writerow(result.columns)
+        for row in result.to_numpy():
+            writer.writerow(row)
+        return response
+
+
+class ResultDataFrameCreator:
+    __csv1: pd.DataFrame
+    __csv2: pd.DataFrame
+    __csv1_diff_columns: list
+    __csv2_diff_columns: list
+    __csv1_key_columns: list
+    __csv2_key_columns: list
+
+    def __init__(self, csv1: pd.DataFrame, csv2: pd.DataFrame, diff_columns: dict, key_columns: dict):
+        self.__csv1 = csv1
+        self.__csv2 = csv2
+        self.__csv1_diff_columns = diff_columns['csv1']
+        self.__csv2_diff_columns = diff_columns['csv2']
+        self.__csv1_key_columns = key_columns['csv1']
+        self.__csv2_key_columns = key_columns['csv2']
+
+    def get_result(self) -> pd.DataFrame:
         csv1_exists = [
             '○', '○', '○', '○', ''
         ]
@@ -89,24 +126,24 @@ class ResultView(View):
         data = {}
         header_base = '{} {}:{}'
         exist_base = '{}に{}が存在'
-        CSV1_NAME = 'CSV1'
-        CSV2_NAME = 'CSV2'
-        KEY_HEADER = 'キー項目'
-        DIFF_HEADER = '比較項目'
-        for i, col in enumerate(csv1_key_col):
-            col_name = header_base.format(CSV1_NAME, KEY_HEADER, col)
-            data[col_name] = csv1_key_col[i]
-        for i, col in enumerate(csv2_key_col):
-            col_name = header_base.format(CSV2_NAME, KEY_HEADER, col)
-            data[col_name] = csv2_key_col[i]
-        for i, col in enumerate(csv1_diff_col):
-            col_name = header_base.format(CSV1_NAME, DIFF_HEADER, col)
-            data[col_name] = csv1_diff_col[i]
-        for i, col in enumerate(csv2_diff_col):
-            col_name = header_base.format(CSV2_NAME, DIFF_HEADER, col)
-            data[col_name] = csv2_diff_col[i]
-        data[exist_base.format(CSV1_NAME, KEY_HEADER)] = csv1_exists
-        data[exist_base.format(CSV2_NAME, KEY_HEADER)] = csv2_exists
+        csv1_name = 'CSV1'
+        csv2_name = 'CSV2'
+        key_header = 'キー項目'
+        diff_header = '比較項目'
+        for i, col in enumerate(self.__csv1_key_columns):
+            col_name = header_base.format(csv1_name, key_header, col)
+            data[col_name] = self.__csv1_key_columns[i]
+        for i, col in enumerate(self.__csv2_key_columns):
+            col_name = header_base.format(csv2_name, key_header, col)
+            data[col_name] = self.__csv2_key_columns[i]
+        for i, col in enumerate(self.__csv1_diff_columns):
+            col_name = header_base.format(csv1_name, diff_header, col)
+            data[col_name] = self.__csv1_diff_columns[i]
+        for i, col in enumerate(self.__csv2_diff_columns):
+            col_name = header_base.format(csv2_name, diff_header, col)
+            data[col_name] = self.__csv2_diff_columns[i]
+        data[exist_base.format(csv1_name, key_header)] = csv1_exists
+        data[exist_base.format(csv2_name, key_header)] = csv2_exists
         data['値の一致'] = value_match
 
         result = pd.DataFrame(data=data)
@@ -119,4 +156,5 @@ setting_diff_column_view = SettingDiffColumnView.as_view()
 setting_key_column_view = SettingKeyColumnView.as_view()
 confirm_view = ConfirmView.as_view()
 result_view = ResultView.as_view()
+result_csv_download_view = ResultCsvDownloadView.as_view()
 
