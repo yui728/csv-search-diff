@@ -110,6 +110,10 @@ STATIC_ROOT = '/var/www/{}/static'.format(PROJECT_NAME)
 
 STATIC_URL = '/static/'
 
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"),
+]
+
 LOGGING = {
     # バージョンは'1'固定
     'version': 1,
@@ -149,3 +153,4 @@ LOGGING = {
         },
     },
 }
+

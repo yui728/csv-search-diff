@@ -26,4 +26,43 @@ DATABASES = {
     }
 }
 
-LOGGING['handlers']['file']['filename'] = '{}/{}.log'.format(Path(__file__).parents[1].joinpath('logs'), PROJECT_NAME)
+# 開発用のログ設定
+LOGGING = {
+    # バージョンは'1'固定
+    'version': 1,
+    # 既存のログは無効化しない
+    'disable_existing_loggers': False,
+    # ログフォーマット7Ω
+    'formatters': {
+        # 開発用
+        'develop': {
+            'format': '%(asctime)s [%(levelname)s] %(pathname)s:%(lineno)d'
+                      '%(message)s '
+        },
+    },
+    # ハンドラ
+    'handlers': {
+        # ファイル出力用ハンドラ
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'develop',
+        }
+    },
+    # ロガー
+    'loggers': {
+        # 自作アプリケーション用ロガー
+        '': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False
+        },
+        # Django本体のロガー
+        'django': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False
+        },
+    },
+}
+
