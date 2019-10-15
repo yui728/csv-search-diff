@@ -7,6 +7,7 @@ import urllib
 import csv
 import pandas as pd
 from django.urls import reverse
+import logging
 
 
 class TopView(View):
@@ -14,7 +15,7 @@ class TopView(View):
         return render(request, 'pages/index.html')
 
     def post(self, request, *args, **kwargs):
-        return render(request, 'pages/setting-diff-column.html')
+        return redirect('/')
 
 
 class SettingDiffColumnView(View):
@@ -22,7 +23,7 @@ class SettingDiffColumnView(View):
         return redirect('/')
 
     def post(self, request, *args, **kwargs):
-        return render(request, '/pages/setting-key-column.html')
+        return render(request, 'pages/setting-diff-column.html')
 
 
 class SettingKeyColumnView(View):
@@ -30,7 +31,7 @@ class SettingKeyColumnView(View):
         return redirect('/')
 
     def post(self, request, *args, **kwargs):
-        return render(request, '/pages/confirm.html')
+        return render(request, 'pages/setting-key-column.html')
 
 
 class ConfirmView(View):
@@ -38,7 +39,7 @@ class ConfirmView(View):
         return redirect('/')
 
     def post(self, request, *args, **kwargs):
-        return render(request, '/pages/result.html')
+        return render(request, 'pages/confirm.html')
 
 
 class ResultView(View):
@@ -46,15 +47,7 @@ class ResultView(View):
         return redirect('/')
 
     def post(self, request, *args, **kwargs):
-        result = self.get_result_dataframe()
-        response = HttpResponse(content_type='text/csv; charset=utf8')
-        filename = urllib.parse.quote(u'resutlt.csv'.encode('utf8'))
-        response['Content-Disposition'] = 'attachment; filename*=UTF-8\'\'{}'.format(filename)
-        writer = csv.writer(response)
-        writer.writerow(result.columns)
-        for row in result.to_numpy():
-            writer.writerow(row)
-        return response
+        return render(request, 'pages/result.html')
 
 
 class ResultCsvDownloadView(View):
@@ -62,6 +55,8 @@ class ResultCsvDownloadView(View):
         return redirect(reverse('apps:index'))
 
     def post(self, request, *args, **kwargs):
+        logger = logging.getLogger(__name__)
+        logger.debug("start download_result_csv post method start")
         csv1 = pd.DataFrame({
             'ヘッダー1': ['1234', '5678', '9012', '3456', ''],
             'ヘッダー2': ['abcde', 'abcdefg', 'abcdefgh', 'ABCD', ''],
@@ -85,13 +80,15 @@ class ResultCsvDownloadView(View):
             'csv2': ['ヘッダー4', 'ヘッダー5']
         }
         df_creator = ResultDataFrameCreator(csv1, csv2, diff_columns, key_columns)
-        result = self.get_result_dataframe()
+        logger.debug("start get_result")
+        result = df_creator.get_result()
+        logger.debug("end get_result={}".format(result))
         response = HttpResponse(content_type='text/csv; charset=utf8')
         filename = urllib.parse.quote(u'result.csv'.encode('utf8'))
         response['Content-Disposition'] = 'attachment; filename*=UTF-8\'\'{}'.format(filename)
         writer = csv.writer(response)
         writer.writerow(result.columns)
-        for row in result.to_numpy():
+        for row in result.values:
             writer.writerow(row)
         return response
 
