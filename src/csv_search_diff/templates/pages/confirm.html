@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 {% block title %}CSVを比較する：項目の確認{% endblock %}
+{% block content_title %}CSVを比較する：項目の確認{% endblock %}
 {% block content %}
+<form method="POST" action="{% url 'apps:result' %}">
 <sction>
     <p class="h4">読み込んだCSV</p>
     <label class="h6">CSV1</label>
@@ -71,15 +73,15 @@
 </setion>
 <section>
     <p class="h4">キーにする項目</p>
-    <form method="POST" action="result.html">
-        <p>CSV1のヘッダー4とCSV2のヘッダー4をキーにする</p>
-        <p>CSV1のヘッダー5とCSV2のヘッダー5をキーにする</p>
-         <div class="form-group row justify-content-center">
-            <div>
-                <input type="button" class="btn btn-outline-secondary" id="page_back" value="戻る" />
-                <input type="submit" class="btn btn-primary" value="比較する" />
-            </div>
+    <p>CSV1のヘッダー4とCSV2のヘッダー4をキーにする</p>
+    <p>CSV1のヘッダー5とCSV2のヘッダー5をキーにする</p>
+     <div class="form-group row justify-content-center">
+        <div>
+            <input type="button" class="btn btn-outline-secondary" id="page_back" value="戻る" />
+            <input type="submit" class="btn btn-primary" value="比較する" />
         </div>
-    </form>
+    </div>
 </section>
+    {% csrf_token %}
+</form>
 {% endblock %}

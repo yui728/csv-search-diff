@@ -1,6 +1,7 @@
 from django.test import TestCase
 from pathlib import Path
 from django.urls import reverse
+import urllib
 
 
 class AppsViewTest(TestCase):
@@ -12,6 +13,7 @@ class AppsViewTest(TestCase):
         """index Page get-access"""
         response = self.client.get(reverse('apps:index'))
         self.assertTemplateUsed(response, 'pages/index.html')
+        self.assertContains(response, 'CSVを比較する')
 
     def test_top_post(self):
         """index Page post-access"""
@@ -67,15 +69,16 @@ class AppsViewTest(TestCase):
 
     def test_download_result_get(self):
         """search diff result csv-download get-access"""
-        response = self.get('/download_result_csv')
+        response = self.client.get('/download_result_csv')
         self.assertRedirects(response, '/')
 
     def test_download_result_post(self):
         """search diff result csv-download post-access"""
         response = self.client.post(reverse('apps:download_result_csv'))
+        filename = urllib.parse.quote(u'result.csv'.encode('utf-8'))
         self.assertEquals(
             response.get('Content-Disposition'),
-            "attachment; filename=result.csv"
+            "attachment; filename*=UTF-8\'\'{}".format(filename)
         )
 
 

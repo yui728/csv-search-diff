@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 {% block title %}CSVを比較する：キー項目の設定{% endblock %}
+{% block content_title %}CSVを比較する：キー項目の設定{% endblock %}
 {% block content %}
+<form method="POST" action="{% url 'apps:confirm' %}">
 <sction>
     <p class="h4">読み込んだCSV</p>
     <label class="h6">CSV1</label>
@@ -71,56 +73,56 @@
 </setion>
 <section>
     <p class="h4">キーにする項目</p>
-    <form method="POST" action="confirm.html">
-        <div class="row">
-            <label class="col-sm h6">CSV1</label>
-            <label class="col-sm h6">CSV2</label>
-            <label class="col-sm h6">詳細</label>
+    <div class="row">
+        <label class="col-sm h6">CSV1</label>
+        <label class="col-sm h6">CSV2</label>
+        <label class="col-sm h6">詳細</label>
+    </div>
+    <div class="form-group row">
+        <select class="form-control col-sm" name="csv1_diff_col">
+            <option value="0">ヘッダー1</option>
+            <option value="1">ヘッダー2</option>
+            <option value="2">ヘッダー3</option>
+            <option value="3" selected>ヘッダー4</option>
+            <option value="4">ヘッダー5</option>
+        </select>
+        <select class="form-control col-sm" name="csv2_diff_col">
+            <option value="0">ヘッダー1</option>
+            <option value="1">ヘッダー2</option>
+            <option value="2">ヘッダー3</option>
+            <option value="3" selected>ヘッダー4</option>
+            <option value="4">ヘッダー5</option>
+        </select>
+        <p class="col-sm">CSV1のヘッダー4とCSV2のヘッダー4をキーにする</p>
+    </div>
+    <div class="form-group row">
+        <select class="form-control col-sm" name="csv1_diff_col">
+            <option value="0">ヘッダー1</option>
+            <option value="1">ヘッダー2</option>
+            <option value="2">ヘッダー3</option>
+            <option value="3">ヘッダー4</option>
+            <option value="4">ヘッダー5</option>
+        </select>
+        <select class="form-control col-sm" name="csv2_diff_col">
+            <option value="0">ヘッダー1</option>
+            <option value="1">ヘッダー2</option>
+            <option value="2">ヘッダー3</option>
+            <option value="3">ヘッダー4</option>
+            <option value="4">ヘッダー5</option>
+        </select>
+        <p class="col-sm"></p>
+    </div>
+    <div class="form-group row justify-content-around" role="group">
+        <button type="button" class="btn btn-outline-dark col-sm" id="add_diff_row">項目を追加する</button>
+        <button type="button" class="btn btn-outline-dark col-sm" id="delete_diff_row">項目を削除する</button>
+    </div>
+    <div class="form-group row justify-content-center">
+        <div>
+            <input type="button" class="btn btn-outline-secondary" id="page_back" value="戻る" />
+            <input type="submit" class="btn btn-primary" value="次へ" />
         </div>
-        <div class="form-group row">
-            <select class="form-control col-sm" name="csv1_diff_col">
-                <option value="0">ヘッダー1</option>
-                <option value="1">ヘッダー2</option>
-                <option value="2">ヘッダー3</option>
-                <option value="3" selected>ヘッダー4</option>
-                <option value="4">ヘッダー5</option>
-            </select>
-            <select class="form-control col-sm" name="csv2_diff_col">
-                <option value="0">ヘッダー1</option>
-                <option value="1">ヘッダー2</option>
-                <option value="2">ヘッダー3</option>
-                <option value="3" selected>ヘッダー4</option>
-                <option value="4">ヘッダー5</option>
-            </select>
-            <p class="col-sm">CSV1のヘッダー4とCSV2のヘッダー4をキーにする</p>
-        </div>
-        <div class="form-group row">
-            <select class="form-control col-sm" name="csv1_diff_col">
-                <option value="0">ヘッダー1</option>
-                <option value="1">ヘッダー2</option>
-                <option value="2">ヘッダー3</option>
-                <option value="3">ヘッダー4</option>
-                <option value="4">ヘッダー5</option>
-            </select>
-            <select class="form-control col-sm" name="csv2_diff_col">
-                <option value="0">ヘッダー1</option>
-                <option value="1">ヘッダー2</option>
-                <option value="2">ヘッダー3</option>
-                <option value="3">ヘッダー4</option>
-                <option value="4">ヘッダー5</option>
-            </select>
-            <p class="col-sm"></p>
-        </div>
-        <div class="form-group row justify-content-around" role="group">
-            <button type="button" class="btn btn-outline-dark col-sm" id="add_diff_row">項目を追加する</button>
-            <button type="button" class="btn btn-outline-dark col-sm" id="delete_diff_row">項目を削除する</button>
-        </div>
-        <div class="form-group row justify-content-center">
-            <div>
-                <input type="button" class="btn btn-outline-secondary" id="page_back" value="戻る" />
-                <input type="submit" class="btn btn-primary" value="次へ" />
-            </div>
-        </div>
-    </form>
+    </div>
 </section>
+    {% csrf_token %}
+</form>
 {% endblock %}
