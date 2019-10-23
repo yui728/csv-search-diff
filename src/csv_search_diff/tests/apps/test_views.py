@@ -28,8 +28,11 @@ class AppsViewTest(TestCase):
     def test_setting_diff_columns_post(self):
         """setting diff columns page post-access"""
         with open(self.inputFileDir.joinpath('csv_with_header.csv')) as f:
-            response = self.client.post(reverse('apps:setting_diff_column'), {'csv1': f, 'csv2': f})
-            self.assertTemplateUsed(response, 'pages/setting-diff-column.html')
+            response = self.client.post(
+                reverse('apps:setting_diff_column'),
+                {'csv1': f, 'csv2': f})
+            self.assertTemplateUsed(response,
+                                    'pages/setting-diff-column.html')
 
     def test_setting_key_columns_get(self):
         """setting key columns page get-access"""
@@ -40,7 +43,8 @@ class AppsViewTest(TestCase):
         """setting key columns page post-access"""
         response = self.client.post(
             reverse('apps:setting_key_column'),
-            {'csv1_diff_col': ['col3', 'col4'], 'csv2_diff_col': ['col3', 'col4']}
+            {'csv1_diff_col': ['col3', 'col4'],
+             'csv2_diff_col': ['col3', 'col4']}
         )
         self.assertTemplateUsed(response, 'pages/setting-key-column.html')
 
@@ -53,7 +57,8 @@ class AppsViewTest(TestCase):
         """search diff confirm page post-access"""
         response = self.client.post(
             reverse('apps:confirm'),
-            {'csv1_key_col': ['col1', 'col2'], 'csv2_key_col': ['col1', 'col2']}
+            {'csv1_key_col': ['col1', 'col2'],
+             'csv2_key_col': ['col1', 'col2']}
         )
         self.assertTemplateUsed(response, 'pages/confirm.html')
 
@@ -80,6 +85,3 @@ class AppsViewTest(TestCase):
             response.get('Content-Disposition'),
             "attachment; filename*=UTF-8\'\'{}".format(filename)
         )
-
-
-

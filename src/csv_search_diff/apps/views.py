@@ -79,13 +79,18 @@ class ResultCsvDownloadView(View):
             'csv1': ['ヘッダー4', 'ヘッダー5'],
             'csv2': ['ヘッダー4', 'ヘッダー5']
         }
-        df_creator = ResultDataFrameCreator(csv1, csv2, diff_columns, key_columns)
+        df_creator = ResultDataFrameCreator(
+            csv1,
+            csv2,
+            diff_columns,
+            key_columns)
         logger.debug("start get_result")
         result = df_creator.get_result()
         logger.debug("end get_result={}".format(result))
         response = HttpResponse(content_type='text/csv; charset=utf8')
         filename = urllib.parse.quote(u'result.csv'.encode('utf8'))
-        response['Content-Disposition'] = 'attachment; filename*=UTF-8\'\'{}'.format(filename)
+        response['Content-Disposition']\
+            = 'attachment; filename*=UTF-8\'\'{}'.format(filename)
         writer = csv.writer(response)
         writer.writerow(result.columns)
         for row in result.values:
@@ -101,7 +106,12 @@ class ResultDataFrameCreator:
     __csv1_key_columns: list
     __csv2_key_columns: list
 
-    def __init__(self, csv1: pd.DataFrame, csv2: pd.DataFrame, diff_columns: dict, key_columns: dict):
+    def __init__(
+            self,
+            csv1: pd.DataFrame,
+            csv2: pd.DataFrame,
+            diff_columns: dict,
+            key_columns: dict):
         self.__csv1 = csv1
         self.__csv2 = csv2
         self.__csv1_diff_columns = diff_columns['csv1']
@@ -154,4 +164,3 @@ setting_key_column_view = SettingKeyColumnView.as_view()
 confirm_view = ConfirmView.as_view()
 result_view = ResultView.as_view()
 result_csv_download_view = ResultCsvDownloadView.as_view()
-
