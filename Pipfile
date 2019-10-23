@@ -4,11 +4,11 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+django-stubs = "*"
 
 [packages]
 django = "*"
 django-bootstrap4 = "*"
-pandaas = "*"
 pandas = "*"
 
 [requires]
