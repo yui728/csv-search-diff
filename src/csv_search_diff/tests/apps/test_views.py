@@ -1,13 +1,13 @@
 from django.test import TestCase
-from pathlib import Path
 from django.urls import reverse
 import urllib
+from . import test_settings
 
 
 class AppsViewTest(TestCase):
     def setUp(self) -> None:
         super().setUp()
-        self.inputFileDir = Path(__file__).resolve().parent.parent.joinpath('csv')
+        self.inputFileDir = test_settings.CSV_DIR
 
     def test_top_get(self):
         """index Page get-access"""

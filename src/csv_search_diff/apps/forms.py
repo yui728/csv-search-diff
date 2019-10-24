@@ -15,7 +15,7 @@ class CsvInputForm(forms.Form):
     )
 
     csv2 = forms.fields.FileField(
-        lavel='CSV2',
+        label='CSV2',
         required=True,
         widget=forms.widgets.FileInput
     )

@@ -56,7 +56,7 @@ class ResultCsvDownloadView(View):
 
     def post(self, request, *args, **kwargs):
         logger = logging.getLogger(__name__)
-        logger.debug("start download_result_csv post method start")
+        # logger.debug("start download_result_csv post method start")
         csv1 = pd.DataFrame({
             'ヘッダー1': ['1234', '5678', '9012', '3456', ''],
             'ヘッダー2': ['abcde', 'abcdefg', 'abcdefgh', 'ABCD', ''],
@@ -84,9 +84,9 @@ class ResultCsvDownloadView(View):
             csv2,
             diff_columns,
             key_columns)
-        logger.debug("start get_result")
+        # logger.debug("start get_result")
         result = df_creator.get_result()
-        logger.debug("end get_result={}".format(result))
+        # logger.debug("end get_result={}".format(result))
         response = HttpResponse(content_type='text/csv; charset=utf8')
         filename = urllib.parse.quote(u'result.csv'.encode('utf8'))
         response['Content-Disposition']\
