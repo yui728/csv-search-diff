@@ -10,7 +10,7 @@ class CsvInputForm(forms.Form):
 
     csv1_no_header = forms.fields.BooleanField(
         label='ヘッダーなし',
-        required=True,
+        required=False,
         widget=forms.widgets.CheckboxInput
     )
 
@@ -22,7 +22,7 @@ class CsvInputForm(forms.Form):
 
     csv2_no_header = forms.fields.BooleanField(
         label='ヘッダーなし',
-        required=True,
+        required=False,
         widget=forms.widgets.CheckboxInput
     )
 #

@@ -36,55 +36,127 @@ class CsvInputFormTest(CsvDirTestCase):
         # self.logger.debug('files = {}'.format(files))
         # self.logger.debug('form = {}'.format(form))
         #
-        self.logger.debug('errors: {}'.format(form.errors))
+        # self.logger.debug('errors: {}'.format(form.errors))
         self.assertTrue(form.is_valid())
         self.assertEquals(0, len(form.errors))
 
-    # def test_form_03(self) -> None:
-    #     """csv1_no_header, csv2_no_header is True"""
-    #     with open(self.csvDir.joinpath('csv_without_header.csv')) as f:
-    #         data = {
-    #             'csv1': f,
-    #             'csv1_no_header': True,
-    #             'csv2': f,
-    #             'csv2_no_header': True
-    #         }
-    #
-    #     form = forms.CsvInputForm(data)
-    #
-    #     # self.logger.debug('errors: {}'.format(form.errors))
-    #     self.assertTrue(form.is_valid())
-    #     self.assertEquals(0, len(form.errors))
-    #
-    # def test_form_02(self) -> None:
-    #     """read shift_jis csv file"""
-    #     with open(self.csvDir.joinpath('csv_with_header_sjis.csv')) as f:
-    #         data = {
-    #             'csv1': f,
-    #             'csv1_no_header': False,
-    #             'csv2': f,
-    #             'csv2_no_header': False
-    #         }
-    #
-    #     form = forms.CsvInputForm(data)
-    #
-    #     # self.logger.debug('errors: {}'.format(form.errors))
-    #     self.assertTrue(form.is_valid())
-    #     self.assertEquals(0, len(form.errors))
-    #
-    # def test_form_04(self) -> None:
-    #     """csv1 not set is returned Error"""
-    #     with open(self.csvDir.joinpath('csv_with_header.csv')) as f:
-    #         data = {
-    #             'csv1': None,
-    #             'csv1_no_header': True,
-    #             'csv2': f,
-    #             'csv2_no_header': False
-    #         }
-    #
-    #     form = forms.CsvInputForm(data)
-    #     # self.logger.debug('errors: {}'.format(form.errors))
-    #     self.assertFalse(form.is_valid())
-    #     self.assertTrue(len(form.errors) > 0)
-    #     self.assertTrue(form.errors['csv1'])
+    def test_form_03(self) -> None:
+        """csv1_no_header, csv2_no_header is True"""
+        with open(self.csvDir.joinpath('csv_without_header.csv')) as f:
+            file_data = bytes(f.read(), encoding=f.encoding)
+            files = {
+                'csv1': SimpleUploadedFile(f.name, file_data),
+                'csv2': SimpleUploadedFile(f.name, file_data)
+            }
+
+        data = {
+            'csv1_no_header': True,
+            'csv2_no_header': True
+        }
+
+        form = forms.CsvInputForm(data, files)
+
+        # self.logger.debug('errors: {}'.format(form.errors))
+        self.assertTrue(form.is_valid())
+        self.assertEquals(0, len(form.errors))
+
+    def test_form_02(self) -> None:
+        """read shift_jis csv file"""
+        with open(self.csvDir.joinpath('csv_with_header_sjis.csv'), 'rb') as f:
+            file_data = bytes(f.read())
+            files = {
+                'csv1': SimpleUploadedFile(f.name, file_data),
+                'csv2': SimpleUploadedFile(f.name, file_data)
+            }
+
+        data = {
+            'csv1_no_header': False,
+            'csv2_no_header': False
+        }
+
+        form = forms.CsvInputForm(data, files)
+
+        # self.logger.debug('errors: {}'.format(form.errors))
+        self.assertTrue(form.is_valid())
+        self.assertEquals(0, len(form.errors))
+
+    def test_form_04(self) -> None:
+        """csv1 not set is returned Error"""
+        with open(self.csvDir.joinpath('csv_with_header.csv')) as f:
+            file_data = bytes(f.read(), encoding=f.encoding)
+            files = {
+                'csv1': None,
+                'csv2': SimpleUploadedFile(f.name, file_data)
+            }
+            data = {
+                'csv1_no_header': True,
+                'csv2_no_header': False
+            }
+
+        form = forms.CsvInputForm(data, files)
+        # self.logger.debug('errors: {}'.format(form.errors))
+        self.assertFalse(form.is_valid())
+        self.assertTrue(1, len(form.errors))
+        self.assertTrue(form.errors['csv1'])
+
+    def test_form_05(self) -> None:
+        """csv2 not set is returned Error"""
+        with open(self.csvDir.joinpath('csv_with_header.csv')) as f:
+            file_data = bytes(f.read(), encoding=f.encoding)
+            files = {
+                'csv1': SimpleUploadedFile(f.name, file_data),
+                'csv2': None
+            }
+            data = {
+                'csv1_no_header': True,
+                'csv2_no_header': False
+            }
+
+        form = forms.CsvInputForm(data, files)
+        # self.logger.debug('errors: {}'.format(form.errors))
+        self.assertFalse(form.is_valid())
+        self.assertTrue(1, len(form.errors))
+        self.assertTrue(form.errors['csv2'])
+
+    def test_form_06(self) -> None:
+        """csv1 not csv-style is error"""
+        with open(self.csvDir.joinpath('blank.csv')) as f:
+            files = {
+                'csv1': SimpleUploadedFile(f.name, bytes(f.read(), encoding=f.encoding))
+            }
+        with open(self.csvDir.joinpath('csv_with_header.csv')) as f:
+            files['csv2'] = SimpleUploadedFile(f.name, bytes(f.read(), encoding=f.encoding))
+
+        data = {
+            'csv1_no_header': False,
+            'csv2_no_header': True
+        }
+
+        # self.logger.debug('files = {}'.format(files))
+
+        form = forms.CsvInputForm(data, files)
+        self.assertFalse(form.is_valid())
+        # self.logger.debug('errors = {}'.format(form.errors))
+        self.assertEquals(1, len(form.errors))
+        self.assertTrue(form.errors['csv1'])
+
+    def test_form_07(self) -> None:
+        """csv2 not csv-style is error"""
+        with open(self.csvDir.joinpath('blank.csv')) as f:
+            files = {
+                'csv2': SimpleUploadedFile(f.name, bytes(f.read(), encoding=f.encoding))
+            }
+        with open(self.csvDir.joinpath('csv_with_header.csv')) as f:
+            files['csv1'] = SimpleUploadedFile(f.name, bytes(f.read(), encoding=f.encoding))
+
+        data = {
+            'csv1_no_header': False,
+            'csv2_no_header': True
+        }
+
+        form = forms.CsvInputForm(data, files)
+        self.assertFalse(form.is_valid())
+        # self.logger.debug('errors = {}'.format(form.errors))
+        self.assertEquals(1, len(form.errors))
+        self.assertTrue(form.errors['csv2'])
 
