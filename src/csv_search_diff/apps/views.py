@@ -8,11 +8,15 @@ import csv
 import pandas as pd
 from django.urls import reverse
 import logging
+from . import forms
 
 
 class TopView(View):
     def get(self, request, *args, **kwargs):
-        return render(request, 'pages/index.html')
+        context = {
+            'form': forms.CsvInputForm()
+        }
+        return render(request, 'pages/index.html', context)
 
     def post(self, request, *args, **kwargs):
         return redirect('/')
