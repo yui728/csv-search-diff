@@ -4,6 +4,7 @@ from . import test_settings
 from logging import getLogger
 from django.core.files.uploadedfile import SimpleUploadedFile
 
+
 class CsvDirTestCase(TestCase):
     @classmethod
     def setUpClass(cls) -> None:
@@ -18,7 +19,7 @@ class CsvInputFormTest(CsvDirTestCase):
         cls.logger = getLogger(__name__)
 
     def test_form_01(self) -> None:
-        """read utf-8 csv file"""
+        """UTF-8エンコードのCSVファイルが読み込める"""
         with open(self.csvDir.joinpath('csv_with_header.csv'), 'r') as f:
             file_data = bytes(f.read(), encoding=f.encoding)
             files = {
@@ -41,7 +42,7 @@ class CsvInputFormTest(CsvDirTestCase):
         self.assertEquals(0, len(form.errors))
 
     def test_form_03(self) -> None:
-        """csv1_no_header, csv2_no_header is True"""
+        """CSV1とCSV2のヘッダーなしチェックボックスをOFFにすることが可能"""
         with open(self.csvDir.joinpath('csv_without_header.csv')) as f:
             file_data = bytes(f.read(), encoding=f.encoding)
             files = {
@@ -61,7 +62,7 @@ class CsvInputFormTest(CsvDirTestCase):
         self.assertEquals(0, len(form.errors))
 
     def test_form_02(self) -> None:
-        """read shift_jis csv file"""
+        """shift_jisエンコードのCSVファイルを読み込むことができる"""
         with open(self.csvDir.joinpath('csv_with_header_sjis.csv'), 'rb') as f:
             file_data = bytes(f.read())
             files = {
@@ -81,7 +82,7 @@ class CsvInputFormTest(CsvDirTestCase):
         self.assertEquals(0, len(form.errors))
 
     def test_form_04(self) -> None:
-        """csv1 not set is returned Error"""
+        """CSV1が設定されていない場合はエラーになる"""
         with open(self.csvDir.joinpath('csv_with_header.csv')) as f:
             file_data = bytes(f.read(), encoding=f.encoding)
             files = {
@@ -100,7 +101,7 @@ class CsvInputFormTest(CsvDirTestCase):
         self.assertTrue(form.errors['csv1'])
 
     def test_form_05(self) -> None:
-        """csv2 not set is returned Error"""
+        """CSV2が設定されていない場合はエラーになる"""
         with open(self.csvDir.joinpath('csv_with_header.csv')) as f:
             file_data = bytes(f.read(), encoding=f.encoding)
             files = {
@@ -119,7 +120,7 @@ class CsvInputFormTest(CsvDirTestCase):
         self.assertTrue(form.errors['csv2'])
 
     def test_form_06(self) -> None:
-        """csv1 not csv-style is error"""
+        """CSV1がCSVとして解釈できない場合はエラーとなる"""
         with open(self.csvDir.joinpath('blank.csv')) as f:
             files = {
                 'csv1': SimpleUploadedFile(f.name, bytes(f.read(), encoding=f.encoding))
@@ -141,7 +142,7 @@ class CsvInputFormTest(CsvDirTestCase):
         self.assertTrue(form.errors['csv1'])
 
     def test_form_07(self) -> None:
-        """csv2 not csv-style is error"""
+        """CSV2がCSVとして解釈できない場合はエラーとなる"""
         with open(self.csvDir.joinpath('blank.csv')) as f:
             files = {
                 'csv2': SimpleUploadedFile(f.name, bytes(f.read(), encoding=f.encoding))
