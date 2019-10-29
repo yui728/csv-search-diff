@@ -153,3 +153,18 @@ LOGGING = {
         },
     },
 }
+
+# キャッシュ設定
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'cache_table'
+    }
+}
+
+
+# メディアファイル設定
+# URL
+MEDIA_URL = '/media/'
+# 保存先ディレクトリのルート設定
+MEDIA_ROOT = '/var/www/{}/media'.format(PROJECT_NAME)
