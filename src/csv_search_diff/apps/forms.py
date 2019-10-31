@@ -1,4 +1,5 @@
 from django import forms
+from django.forms.formsets import formset_factory
 
 
 class CsvInputForm(forms.Form):
@@ -28,28 +29,20 @@ class CsvInputForm(forms.Form):
 
 
 class DiffColumnSettingForm(forms.Form):
-    csv1_diff_col = forms.fields.MultipleChoiceField(
+    csv1_diff_col = forms.fields.ChoiceField(
         label='',
         required=True,
         widget=forms.widgets.Select
     )
 
-    csv2_diff_col = forms.fields.MultipleChoiceField(
+    csv2_diff_col = forms.fields.ChoiceField(
         label='',
         required=True,
         widget=forms.widgets.Select
     )
 
-    def is_valid(self):
-        result = super().is_valid()
-        if result:
-            cleaned_data = self.cleaned_data
-            if not len(cleaned_data['csv1_diff_col']) == len(cleaned_data['csv2_diff_col']):
-                result = False
-                self.add_error(None, 'CSV1とCSV2の比較項目の数が違います。')
-        return result
 
-
+DiffColumnSettingFormSet = formset_factory(DiffColumnSettingForm)
 
 # class KeyColumnSettingForm(forms.Form):
 #
