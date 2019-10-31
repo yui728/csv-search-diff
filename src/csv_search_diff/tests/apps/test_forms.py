@@ -166,34 +166,55 @@ class SettingDiffColumnFormTest(TestCase):
     def test_form_01(self) -> None:
         """CSV1の比較項目と、CSV2の比較項目に1つずつ指定できる"""
         data = {
-            'csv1_diff_col': 'ヘッダー1',
-            'csv2_diff_col': 'ヘッダー1'
+            'csv1_diff_col': ['ヘッダー1'],
+            'csv2_diff_col': ['ヘッダー1']
         }
         form = forms.DiffColumnSettingForm(data)
+        form.fields['csv1_diff_col']._set_choices(
+            [('ヘッダー1', 'ヘッダー1'),
+             ('ヘッダー2', 'ヘッダー2')]
+        )
+        form.fields['csv2_diff_col']._set_choices(
+            [('ヘッダー1', 'ヘッダー1'),
+             ('ヘッダー2', 'ヘッダー2')]
+        )
         self.assertTrue(form.is_valid())
-        pass
 
     def test_form_02(self) -> None:
         """CSV1の比較項目が0個の場合はエラー"""
         data = {
             'csv1_diff_col': None,
-            'csv2_diff_col': 'ヘッダー1'
+            'csv2_diff_col': ['ヘッダー1']
         }
         form = forms.DiffColumnSettingForm(data)
+        form.fields['csv1_diff_col']._set_choices(
+            [('ヘッダー1', 'ヘッダー1'),
+             ('ヘッダー2', 'ヘッダー2')]
+        )
+        form.fields['csv2_diff_col']._set_choices(
+            [('ヘッダー1', 'ヘッダー1'),
+             ('ヘッダー2', 'ヘッダー2')]
+        )
         self.assertFalse(form.is_valid())
         self.assertTrue(form.errors['csv1_diff_col'])
-        pass
 
     def test_form_03(self) -> None:
         """CSV2の比較項目が0個の場合はエラー"""
         data = {
-            'csv1_diff_col': 'ヘッダー1',
+            'csv1_diff_col': ['ヘッダー1'],
             'csv2_diff_col': None
         }
         form = forms.DiffColumnSettingForm(data)
+        form.fields['csv1_diff_col']._set_choices(
+            [('ヘッダー1', 'ヘッダー1'),
+             ('ヘッダー2', 'ヘッダー2')]
+        )
+        form.fields['csv2_diff_col']._set_choices(
+            [('ヘッダー1', 'ヘッダー1'),
+             ('ヘッダー2', 'ヘッダー2')]
+        )
         self.assertFalse(form.is_valid())
         self.assertTrue(form.errors['csv2_diff_col'])
-        pass
 
     def test_form_04(self) -> None:
         """CSV1の比較項目と、CSV2の比較項目に複数指定できる"""
@@ -202,8 +223,15 @@ class SettingDiffColumnFormTest(TestCase):
             'csv2_diff_col': ['ヘッダー1', 'ヘッダー2']
         }
         form = forms.DiffColumnSettingForm(data)
+        form.fields['csv1_diff_col']._set_choices(
+            [('ヘッダー1', 'ヘッダー1'),
+             ('ヘッダー2', 'ヘッダー2')]
+        )
+        form.fields['csv2_diff_col']._set_choices(
+            [('ヘッダー1', 'ヘッダー1'),
+             ('ヘッダー2', 'ヘッダー2')]
+        )
         self.assertTrue(form.is_valid())
-        pass
 
     def test_form_05(self) -> None:
         """CSV1の比較項目と、CSV2の比較項目の個数が異なる場合はエラー"""
@@ -212,5 +240,13 @@ class SettingDiffColumnFormTest(TestCase):
             'csv2_diff_col': ['ヘッダー1']
         }
         form = forms.DiffColumnSettingForm(data)
+        form.fields['csv1_diff_col']._set_choices(
+            [('ヘッダー1', 'ヘッダー1'),
+             ('ヘッダー2', 'ヘッダー2')]
+        )
+        form.fields['csv2_diff_col']._set_choices(
+            [('ヘッダー1', 'ヘッダー1'),
+             ('ヘッダー2', 'ヘッダー2')]
+        )
         self.assertFalse(form.is_valid())
-        pass
+        self.assertTrue('CSV1とCSV2の比較項目の数が違います。' in form.non_field_errors())
