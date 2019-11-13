@@ -217,7 +217,7 @@ class SettingDiffColumnFormTest(TestCase):
         self.assertTrue(form.errors['csv2_diff_col'])
 
 
-class DiffColumnSettingFormSetTest(TestCase):
+class CreateFormSetTest(TestCase):
     def test_form_01(self) -> None:
         """フォームセットを使用してCSV1の比較項目と、CSV2の比較項目に複数指定できる"""
         data = {
@@ -230,7 +230,12 @@ class DiffColumnSettingFormSetTest(TestCase):
             'form-1-csv2_diff_col': 'ヘッダー2'
         }
 
-        formset = forms.DiffColumnSettingFormSet(data)
+        diff_column_setting_form = forms.create_formset(
+            forms.DiffColumnSettingForm,
+            max_num=2
+        )
+
+        formset = diff_column_setting_form(data)
 
         for form in formset.forms:
             form.fields['csv1_diff_col']._set_choices(
@@ -257,7 +262,13 @@ class DiffColumnSettingFormSetTest(TestCase):
             'form-1-csv1_diff_col': 'ヘッダー2',
             'form-1-csv2_diff_col': 'ヘッダー2'
         }
-        formset = forms.DiffColumnSettingFormSet(data)
+        diff_column_setting_form = forms.create_formset(
+            forms.DiffColumnSettingForm,
+            max_num=2
+        )
+
+        formset = diff_column_setting_form(data)
+
         for form in formset.forms:
             form.fields['csv1_diff_col']._set_choices(
                 [('ヘッダー1', 'ヘッダー1'),
