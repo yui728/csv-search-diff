@@ -1,8 +1,8 @@
 from django.shortcuts import render, redirect
-
-# Create your views here.
 from django.http import HttpResponse
 from django.views import View
+from django.core.files.uploadedfile import UploadedFile
+from django.conf import settings
 import urllib
 import csv
 import pandas as pd
@@ -13,6 +13,7 @@ from . import forms
 
 class TopView(View):
     def get(self, request, *args, **kwargs):
+        request.session.flush()
         context = {
             'form': forms.CsvInputForm()
         }
@@ -27,7 +28,47 @@ class SettingDiffColumnView(View):
         return redirect('/')
 
     def post(self, request, *args, **kwargs):
-        return render(request, 'pages/setting-diff-column.html')
+        form = forms.CsvInputForm(request.POST, request.FILES)
+        if form.is_valid():
+            cleaned_data = form.clean()
+            csv1: pd.DataFrame = self.__csv_to_dataframe(cleaned_data['csv1'], cleaned_data['csv1_no_header'])
+            csv2: pd.DataFrame = self.__csv_to_dataframe(cleaned_data['csv2'], cleaned_data['csv2_no_header'])
+
+            request.session['csv1'] = csv1.to_json()
+            request.session['csv2'] = csv2.to_json()
+            request.session['csv1_no_header'] = form.cleaned_data['csv1_no_header']
+            request.session['csv2_no_header'] = form.cleaned_data['csv2_no_header']
+            request.session.set_expiry(settings.SESSION_MAX_SECOND)
+
+            diff_column_max = (len(csv1.columns) - 1) if len(csv1.columns) >= len(csv2.columns) else (len(csv2.columns) - 1)
+            diff_column_setting_form_set = forms.create_formset(
+                forms.DiffColumnSettingForm,
+                max_num=diff_column_max
+            )
+            formset = diff_column_setting_form_set()
+            for form in formset.forms:
+                form.fields['csv1_diff_col'].choices(
+                    csv1.columns
+                )
+                form.fields['csv2_diff_col'].choices(
+                    csv2.columns
+                )
+            context = {
+                'formset': formset,
+                'back_form': form,
+                'csv1': csv1,
+                'csv2': csv2
+            }
+            return render(request, 'pages/setting-diff-column.html', context)
+        else:
+            context = {
+                'form': form
+            }
+            return render(request, 'pages/index.html', context)
+
+    def __csv_to_dataframe(self, csv: UploadedFile, is_no_header: bool) -> pd.DataFrame:
+        result = pd.DataFrame()
+        return result
 
 
 class SettingKeyColumnView(View):
