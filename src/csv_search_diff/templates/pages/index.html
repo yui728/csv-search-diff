@@ -5,7 +5,7 @@
 {% load bootstrap4 %}
 
 <section>
-    <form method="POST" action="{% url "apps:setting_diff_column" %}">
+    <form method="POST" enctype="multipart/form-data" action="{% url "apps:setting_diff_column" %}">
 
         <div class="form-group">
             {% bootstrap_field form.csv1 label_class='h5' form_group_class=None %}
