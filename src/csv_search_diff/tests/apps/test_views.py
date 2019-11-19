@@ -4,11 +4,13 @@ import urllib
 from . import test_settings
 
 
-class AppsViewTest(TestCase):
+class CsvSettingTestCase(TestCase):
     def setUp(self) -> None:
         super().setUp()
         self.inputFileDir = test_settings.CSV_DIR
 
+
+class TopViewTest(CsvSettingTestCase):
     def test_top_get(self):
         """index Page get-access"""
         response = self.client.get(reverse('apps:index'))
@@ -20,6 +22,8 @@ class AppsViewTest(TestCase):
         response = self.client.post(reverse('apps:index'))
         self.assertRedirects(response, '/')
 
+
+class SettingDiffColumnViewTest(CsvSettingTestCase):
     def test_setting_diff_columns_get(self):
         """setting diff columns page get-access"""
         response = self.client.get('/setting_diff_column')
@@ -34,6 +38,25 @@ class AppsViewTest(TestCase):
             self.assertTemplateUsed(response,
                                     'pages/setting-diff-column.html')
 
+    def test__csv_to_dataframe_01(self):
+        """CSVからDataFrameに変換する（ヘッダーあり）"""
+        with open(self.inputFileDir.joinpath('csv_with_header.csv')) as f:
+            response = self.client.post(
+                reverse('apps:setting_diff_column'),
+                {'csv1': f,
+                    'csv2': f,
+                    'csv1_no_header': False,
+                    'csv2_no_header': False})
+            self.assertTrue(self.client.session.get('csv1'))
+            self.assertTrue(self.client.session.get('csv2'))
+            csv1 = self.client.session.get('csv1')
+            self.assertTrue('header1' in csv1)
+            self.assertTrue('header2' in csv1)
+            self.assertTrue('header3' in csv1)
+            self.assertTrue('header4' in csv1)
+
+
+class SettingKeyColumnViewTest(CsvSettingTestCase):
     def test_setting_key_columns_get(self):
         """setting key columns page get-access"""
         response = self.client.get('/setting_key_column')
@@ -48,6 +71,8 @@ class AppsViewTest(TestCase):
         )
         self.assertTemplateUsed(response, 'pages/setting-key-column.html')
 
+
+class ConfirmViewTest(CsvSettingTestCase):
     def test_confirm_get(self):
         """search diff confirm page get-access"""
         response = self.client.get('/confirm')
@@ -62,6 +87,8 @@ class AppsViewTest(TestCase):
         )
         self.assertTemplateUsed(response, 'pages/confirm.html')
 
+
+class ResultViewTest(CsvSettingTestCase):
     def test_result_get(self):
         """search diff result page get-access"""
         response = self.client.get('/result')
@@ -72,6 +99,8 @@ class AppsViewTest(TestCase):
         response = self.client.post(reverse('apps:result'))
         self.assertTemplateUsed(response, 'pages/result.html')
 
+
+class ResultCsvDownloadViewTest(CsvSettingTestCase):
     def test_download_result_get(self):
         """search diff result csv-download get-access"""
         response = self.client.get('/download_result_csv')
@@ -85,3 +114,8 @@ class AppsViewTest(TestCase):
             response.get('Content-Disposition'),
             "attachment; filename*=UTF-8\'\'{}".format(filename)
         )
+
+
+
+
+
