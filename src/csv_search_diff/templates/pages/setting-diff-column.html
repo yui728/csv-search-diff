@@ -10,17 +10,15 @@
     <label class="h6">CSV1</>
     <div class="table-responsive-sm">
         <table class="table table-bordered">
-            {% for row in csv1 %}
-            {% if forloop.first %}
             <thead class="thead-light">
                 <tr>
-                    {% for col in row %}
+                    {% for col in csv1.columns %}
                     <th scope="col">{{ col }}</th>
                     {% endfor %}
                 </tr>
             </thead>
-            {% else %}
-            {% if forloop.counter() == 1 %}
+            {% for row in csv1.values %}
+            {% if forloop.counter == 1 %}
             <tbody>
             {% endif %}
                 <tr>
@@ -28,27 +26,24 @@
                     <td>{{ col }}</td>
                 {% endfor %}
                 </tr>
-            {% forloop.counter() == 1 %}
+            {% if forloop.counter == 1 %}
             </tbody>
             {% endif %}
-            {% endif %}
-        {% endfor %}
+            {% endfor %}
         </table>
     </div>
     <label class="h6">CSV2</label>
     <div class="table-responsive-sm">
         <table class="table table-bordered">
-            {% for row in csv2 %}
-            {%  if forloop.first %}
             <thead class="thead-light">
                 <tr>
-                    {% for col in row %}
+                    {% for col in csv2.columns %}
                     <th scope="col">{{ col }}</th>
                     {% endfor %}
                 </tr>
             </thead>
-            {% else %}
-            {% if forloop.counter() == 1 %}
+            {% for row in csv.values %}
+            {% if forloop.counter == 1 %}
             <tbody>
             {% endif %}
                 <tr>
@@ -56,9 +51,8 @@
                     <td>{{ col }}</td>
                     {% endfor %}
                 </tr>
-            {% if forloop.counter() == 1 %}
+            {% if forloop.counter == 1 %}
             </tbody>
-            {% endif %}
             {% endif %}
             {% endfor %}
         </table>
@@ -94,7 +88,7 @@
     {% csrf_token %}
 </form>
 <form method="POST" action="{% url 'apps:index' %}" id="back-form">
-    {% back_form %}
+    {{ back_form }}
     {% csrf_token %}
 </form>
 {% endblock %}
