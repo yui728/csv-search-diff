@@ -171,3 +171,11 @@ MEDIA_ROOT = '/var/www/{}/media'.format(PROJECT_NAME)
 
 # セッションの期限（秒数）
 SESSION_MAX_SECOND = 24 * 60 * 60
+
+# 対応するCSVファイルエンコード
+CSV_FILE_ENCODE_LIST = [
+    'ascii',
+    'euc_jp',
+    'shift_jis',
+    'utf-8'
+]

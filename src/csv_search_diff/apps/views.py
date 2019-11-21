@@ -3,11 +3,13 @@ from django.http import HttpResponse
 from django.views import View
 from django.core.files.uploadedfile import UploadedFile
 from django.conf import settings
+from django.urls import reverse
 import urllib
 import csv
+import _csv
 import pandas as pd
-from django.urls import reverse
 import logging
+import copy
 from . import forms
 
 
@@ -24,12 +26,17 @@ class TopView(View):
 
 
 class SettingDiffColumnView(View):
+
+    __logger = logging.getLogger(__name__)
+
     def get(self, request, *args, **kwargs):
         return redirect('/')
 
     def post(self, request, *args, **kwargs):
+        print(f"POST: {request.POST}, FILES: {request.FILES}")
         form = forms.CsvInputForm(request.POST, request.FILES)
         if form.is_valid():
+            print("SettingDiffColumnView.post form.is_valid()")
             cleaned_data = form.clean()
             csv1: pd.DataFrame = self.__csv_to_dataframe(cleaned_data['csv1'], cleaned_data['csv1_no_header'])
             csv2: pd.DataFrame = self.__csv_to_dataframe(cleaned_data['csv2'], cleaned_data['csv2_no_header'])
@@ -40,19 +47,20 @@ class SettingDiffColumnView(View):
             request.session['csv2_no_header'] = form.cleaned_data['csv2_no_header']
             request.session.set_expiry(settings.SESSION_MAX_SECOND)
 
-            diff_column_max = (len(csv1.columns) - 1) if len(csv1.columns) >= len(csv2.columns) else (len(csv2.columns) - 1)
+            diff_column_max =\
+                (len(csv1.columns) - 1) if len(csv1.columns) >= len(csv2.columns) else (len(csv2.columns) - 1)
             diff_column_setting_form_set = forms.create_formset(
                 forms.DiffColumnSettingForm,
                 max_num=diff_column_max
             )
             formset = diff_column_setting_form_set()
             for form in formset.forms:
-                form.fields['csv1_diff_col'].choices(
-                    csv1.columns
-                )
-                form.fields['csv2_diff_col'].choices(
-                    csv2.columns
-                )
+                form.fields['csv1_diff_col'].choices = [
+                    (value, text) for (value, text) in enumerate(csv1.columns)
+                ]
+                form.fields['csv2_diff_col'].choices = [
+                    (value, text) for (value, text) in enumerate(csv2.columns)
+                ]
             context = {
                 'formset': formset,
                 'back_form': form,
@@ -61,14 +69,49 @@ class SettingDiffColumnView(View):
             }
             return render(request, 'pages/setting-diff-column.html', context)
         else:
+            print("SettingDiffColumnView.post form.is_valid() is false")
+            print(f"form-error {form.errors}")
             context = {
                 'form': form
             }
             return render(request, 'pages/index.html', context)
 
-    def __csv_to_dataframe(self, csv: UploadedFile, is_no_header: bool) -> pd.DataFrame:
-        result = pd.DataFrame()
+    def __csv_to_dataframe(self, file_data: UploadedFile, is_no_header: bool) -> pd.DataFrame:
+        with file_data.open(mode='rt') as f:
+            lines = f.readlines()
+            encode = self.__get_upload_csv_encode(lines)
+            lines_data = [str(line, encoding=encode) for line in lines]
+            reader = csv.reader(lines_data)
+            self.__logger.debug(f"reader = {reader}")
+            self.__logger.debug(f"reader.dialect = {reader.dialect}")
+            self.__logger.debug(f"reader.line_num = {reader.line_num}")
+            header = []
+            header_format = "ヘッダー{header}"
+            if is_no_header:
+                header_read = list(reader)
+                row = header_read.pop()
+                for i in range(row.len()):
+                    header.append(header_format.format({'header': i + 1}))
+            else:
+                header = next(reader)
+            self.__logger.debug(f"header = {header}")
+            result = pd.DataFrame(data=reader, index=None, columns=header)
+        self.__logger.debug(f"result = {result}")
         return result
+
+    def __get_upload_csv_encode(self, file_data: list) -> str:
+        for encode in settings.CSV_FILE_ENCODE_LIST:
+            try:
+                lines = [str(line, encoding=encode) for line in file_data]
+                self.__logger.debug(f"{__name__}: lines = {lines}m encode={encode}")
+                csv.reader(lines)
+            except UnicodeDecodeError as e:
+                self.__logger.debug(f"{__name__}: error = {e}")
+                continue
+            except _csv.Error as e:
+                self.__logger.debug(f"{__name__}: error = {e}")
+                continue
+            return encode
 
 
 class SettingKeyColumnView(View):

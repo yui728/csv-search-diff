@@ -102,7 +102,7 @@ class CsvInputFormTest(CsvDirTestCase):
 
     def test_form_05(self) -> None:
         """CSV2が設定されていない場合はエラーになる"""
-        with open(self.csvDir.joinpath('csv_with_header.csv')) as f:
+        with open(self.csvDir.joinpath('csv_with_header.csv'), mode='rt') as f:
             file_data = bytes(f.read(), encoding=f.encoding)
             files = {
                 'csv1': SimpleUploadedFile(f.name, file_data),
@@ -121,11 +121,11 @@ class CsvInputFormTest(CsvDirTestCase):
 
     def test_form_06(self) -> None:
         """CSV1がCSVとして解釈できない場合はエラーとなる"""
-        with open(self.csvDir.joinpath('blank.csv')) as f:
+        with open(self.csvDir.joinpath('blank.csv'), mode='rt') as f:
             files = {
                 'csv1': SimpleUploadedFile(f.name, bytes(f.read(), encoding=f.encoding))
             }
-        with open(self.csvDir.joinpath('csv_with_header.csv')) as f:
+        with open(self.csvDir.joinpath('csv_with_header.csv'), mode='rt') as f:
             files['csv2'] = SimpleUploadedFile(f.name, bytes(f.read(), encoding=f.encoding))
 
         data = {
@@ -143,11 +143,11 @@ class CsvInputFormTest(CsvDirTestCase):
 
     def test_form_07(self) -> None:
         """CSV2がCSVとして解釈できない場合はエラーとなる"""
-        with open(self.csvDir.joinpath('blank.csv')) as f:
+        with open(self.csvDir.joinpath('blank.csv'), mode='rt') as f:
             files = {
                 'csv2': SimpleUploadedFile(f.name, bytes(f.read(), encoding=f.encoding))
             }
-        with open(self.csvDir.joinpath('csv_with_header.csv')) as f:
+        with open(self.csvDir.joinpath('csv_with_header.csv'), mode='rt') as f:
             files['csv1'] = SimpleUploadedFile(f.name, bytes(f.read(), encoding=f.encoding))
 
         data = {
@@ -170,14 +170,14 @@ class SettingDiffColumnFormTest(TestCase):
             'csv2_diff_col': 'ヘッダー1'
         }
         form = forms.DiffColumnSettingForm(data)
-        form.fields['csv1_diff_col']._set_choices(
-            [('ヘッダー1', 'ヘッダー1'),
-             ('ヘッダー2', 'ヘッダー2')]
-        )
-        form.fields['csv2_diff_col']._set_choices(
-            [('ヘッダー1', 'ヘッダー1'),
-             ('ヘッダー2', 'ヘッダー2')]
-        )
+        form.fields['csv1_diff_col'].choices = [
+             ('ヘッダー1', 'ヘッダー1'),
+             ('ヘッダー2', 'ヘッダー2')
+        ]
+        form.fields['csv2_diff_col'].choices = [
+             ('ヘッダー1', 'ヘッダー1'),
+             ('ヘッダー2', 'ヘッダー2')
+        ]
         self.assertTrue(form.is_valid())
 
     def test_form_02(self) -> None:
@@ -187,14 +187,14 @@ class SettingDiffColumnFormTest(TestCase):
             'csv2_diff_col': 'ヘッダー1'
         }
         form = forms.DiffColumnSettingForm(data)
-        form.fields['csv1_diff_col']._set_choices(
-            [('ヘッダー1', 'ヘッダー1'),
-             ('ヘッダー2', 'ヘッダー2')]
-        )
-        form.fields['csv2_diff_col']._set_choices(
-            [('ヘッダー1', 'ヘッダー1'),
-             ('ヘッダー2', 'ヘッダー2')]
-        )
+        form.fields['csv1_diff_col'].choices = [
+             ('ヘッダー1', 'ヘッダー1'),
+             ('ヘッダー2', 'ヘッダー2')
+        ]
+        form.fields['csv2_diff_col'].choices = [
+             ('ヘッダー1', 'ヘッダー1'),
+             ('ヘッダー2', 'ヘッダー2')
+        ]
         self.assertFalse(form.is_valid())
         self.assertTrue(form.errors['csv1_diff_col'])
 
@@ -205,14 +205,15 @@ class SettingDiffColumnFormTest(TestCase):
             'csv2_diff_col': None
         }
         form = forms.DiffColumnSettingForm(data)
-        form.fields['csv1_diff_col']._set_choices(
-            [('ヘッダー1', 'ヘッダー1'),
-             ('ヘッダー2', 'ヘッダー2')]
-        )
-        form.fields['csv2_diff_col']._set_choices(
-            [('ヘッダー1', 'ヘッダー1'),
-             ('ヘッダー2', 'ヘッダー2')]
-        )
+        form.fields['csv1_diff_col'].choices = [
+            ('ヘッダー1', 'ヘッダー1'),
+            ('ヘッダー2', 'ヘッダー2')
+        ]
+
+        form.fields['csv2_diff_col'].choices = [
+             ('ヘッダー1', 'ヘッダー1'),
+             ('ヘッダー2', 'ヘッダー2')
+        ]
         self.assertFalse(form.is_valid())
         self.assertTrue(form.errors['csv2_diff_col'])
 
@@ -238,16 +239,16 @@ class CreateFormSetTest(TestCase):
         formset = diff_column_setting_form(data)
 
         for form in formset.forms:
-            form.fields['csv1_diff_col']._set_choices(
-                [('ヘッダー1', 'ヘッダー1'),
+            form.fields['csv1_diff_col'].choices = [
+                 ('ヘッダー1', 'ヘッダー1'),
                  ('ヘッダー2', 'ヘッダー2'),
-                 ('ヘッダー3', 'ヘッダー3')]
-            )
-            form.fields['csv2_diff_col']._set_choices(
-                [('ヘッダー1', 'ヘッダー1'),
+                 ('ヘッダー3', 'ヘッダー3')
+            ]
+            form.fields['csv2_diff_col'].choices = [
+                 ('ヘッダー1', 'ヘッダー1'),
                  ('ヘッダー2', 'ヘッダー2'),
-                 ('ヘッダー3', 'ヘッダー3')]
-            )
+                 ('ヘッダー3', 'ヘッダー3')
+            ]
 
         self.assertTrue(formset.is_valid())
 
@@ -270,14 +271,14 @@ class CreateFormSetTest(TestCase):
         formset = diff_column_setting_form(data)
 
         for form in formset.forms:
-            form.fields['csv1_diff_col']._set_choices(
-                [('ヘッダー1', 'ヘッダー1'),
-                 ('ヘッダー2', 'ヘッダー2')]
-            )
-            form.fields['csv2_diff_col']._set_choices(
-                [('ヘッダー1', 'ヘッダー1'),
+            form.fields['csv1_diff_col'].choices = [
+                 ('ヘッダー1', 'ヘッダー1'),
+                 ('ヘッダー2', 'ヘッダー2')
+            ]
+            form.fields['csv2_diff_col'].choices = [
+                 ('ヘッダー1', 'ヘッダー1'),
                  ('ヘッダー2', 'ヘッダー2'),
-                 ('ヘッダー3', 'ヘッダー3')]
-            )
+                 ('ヘッダー3', 'ヘッダー3')
+            ]
         self.assertFalse(formset.is_valid())
         self.assertTrue('比較項目に設定する列の数が多すぎます。¥nキー項目として最低1列が必要です。' in formset.non_field_errors())

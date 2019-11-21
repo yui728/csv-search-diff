@@ -31,22 +31,24 @@ class SettingDiffColumnViewTest(CsvSettingTestCase):
 
     def test_setting_diff_columns_post(self):
         """setting diff columns page post-access"""
-        with open(self.inputFileDir.joinpath('csv_with_header.csv')) as f:
-            response = self.client.post(
-                reverse('apps:setting_diff_column'),
-                {'csv1': f, 'csv2': f})
-            self.assertTemplateUsed(response,
-                                    'pages/setting-diff-column.html')
+        with open(self.inputFileDir.joinpath('csv_with_header.csv'), mode='rt') as f:
+            with open(self.inputFileDir.joinpath('csv_with_header.csv'), mode='rt') as f2:
+                response = self.client.post(
+                    reverse('apps:setting_diff_column'),
+                    {'csv1': f, 'csv2': f2, 'csv1_no_header': False, 'csv2_no_header': False})
+                self.assertTemplateUsed(response,
+                                        'pages/setting-diff-column.html')
 
     def test__csv_to_dataframe_01(self):
         """CSVからDataFrameに変換する（ヘッダーあり）"""
-        with open(self.inputFileDir.joinpath('csv_with_header.csv')) as f:
-            response = self.client.post(
-                reverse('apps:setting_diff_column'),
-                {'csv1': f,
-                    'csv2': f,
-                    'csv1_no_header': False,
-                    'csv2_no_header': False})
+        with open(self.inputFileDir.joinpath('csv_with_header.csv'), mode='rt') as f:
+            with open(self.inputFileDir.joinpath('csv_with_header.csv'), mode='rt') as f2:
+                response = self.client.post(
+                    reverse('apps:setting_diff_column'),
+                    {'csv1': f,
+                        'csv2': f2,
+                        'csv1_no_header': False,
+                        'csv2_no_header': False})
             self.assertTrue(self.client.session.get('csv1'))
             self.assertTrue(self.client.session.get('csv2'))
             csv1 = self.client.session.get('csv1')
