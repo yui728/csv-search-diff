@@ -42,7 +42,7 @@
                     {% endfor %}
                 </tr>
             </thead>
-            {% for row in csv.values %}
+            {% for row in csv2.values %}
             {% if forloop.counter == 1 %}
             <tbody>
             {% endif %}
@@ -67,8 +67,8 @@
     </div>
     {% for form in formset %}
     <div class="form-group row diff-cols">
-        {% bootstrap_field form.csv1_diff_col show_label=False form_group_class=None field_class='col-sm' %}
-        {% bootstrap_field form.csv2_diff_col show_label=False form_group_class=None field_class='col-sm' %}
+        {% bootstrap_field form.csv1_diff_col show_label=False form_group_class='col-sm' %}
+        {% bootstrap_field form.csv2_diff_col show_label=False form_group_class='col-sm' %}
         <div class="col-sm">
             <p></p>
         </div>

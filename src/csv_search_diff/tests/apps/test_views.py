@@ -2,6 +2,8 @@ from django.test import TestCase
 from django.urls import reverse
 import urllib
 from . import test_settings
+import logging
+from pprint import pprint
 
 
 class CsvSettingTestCase(TestCase):
@@ -39,7 +41,7 @@ class SettingDiffColumnViewTest(CsvSettingTestCase):
                 self.assertTemplateUsed(response,
                                         'pages/setting-diff-column.html')
 
-    def test__csv_to_dataframe_01(self):
+    def test_csv_to_dataframe_01(self):
         """CSVからDataFrameに変換する（ヘッダーあり）"""
         with open(self.inputFileDir.joinpath('csv_with_header.csv'), mode='rt') as f:
             with open(self.inputFileDir.joinpath('csv_with_header.csv'), mode='rt') as f2:
@@ -49,6 +51,8 @@ class SettingDiffColumnViewTest(CsvSettingTestCase):
                         'csv2': f2,
                         'csv1_no_header': False,
                         'csv2_no_header': False})
+            self.assertTemplateUsed(response,
+                                    'pages/setting-diff-column.html')
             self.assertTrue(self.client.session.get('csv1'))
             self.assertTrue(self.client.session.get('csv2'))
             csv1 = self.client.session.get('csv1')
@@ -56,6 +60,40 @@ class SettingDiffColumnViewTest(CsvSettingTestCase):
             self.assertTrue('header2' in csv1)
             self.assertTrue('header3' in csv1)
             self.assertTrue('header4' in csv1)
+            csv2 = self.client.session.get('csv2')
+            self.assertTrue('header1' in csv2)
+            self.assertTrue('header2' in csv2)
+            self.assertTrue('header3' in csv2)
+            self.assertTrue('header4' in csv2)
+
+    def test_csv_to_dataframe_02(self):
+        """CSVからDataFrameに変換する（ヘッダーなし）"""
+        logger = logging.getLogger(__name__)
+        with open(self.inputFileDir.joinpath('csv_without_header.csv')) as f:
+            with open(self.inputFileDir.joinpath('csv_without_header.csv')) as f2:
+                response = self.client.post(
+                    reverse('apps:setting_diff_column'),
+                    {
+                        'csv1': f,
+                        'csv2': f2,
+                        'csv1_no_header': True,
+                        'csv2_no_header': True
+                    }
+                )
+        self.assertTemplateUsed(response,
+                                'pages/setting-diff-column.html')
+        self.assertTrue(self.client.session.get('csv1'))
+        self.assertTrue(self.client.session.get('csv2'))
+        csv1 = self.client.session.get('csv1')
+        self.assertTrue('ヘッダー1'.encode('unicode_escape') in csv1.encode('utf-8'))
+        self.assertTrue('ヘッダー2'.encode('unicode_escape') in csv1.encode('utf-8'))
+        self.assertTrue('ヘッダー3'.encode('unicode_escape') in csv1.encode('utf-8'))
+        self.assertTrue('ヘッダー4'.encode('unicode_escape') in csv1.encode('utf-8'))
+        csv2 = self.client.session.get('csv2')
+        self.assertTrue('ヘッダー1'.encode('unicode_escape') in csv2.encode('utf-8'))
+        self.assertTrue('ヘッダー2'.encode('unicode_escape') in csv2.encode('utf-8'))
+        self.assertTrue('ヘッダー3'.encode('unicode_escape') in csv2.encode('utf-8'))
+        self.assertTrue('ヘッダー4'.encode('unicode_escape') in csv2.encode('utf-8'))
 
 
 class SettingKeyColumnViewTest(CsvSettingTestCase):

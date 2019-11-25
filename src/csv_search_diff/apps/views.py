@@ -33,10 +33,10 @@ class SettingDiffColumnView(View):
         return redirect('/')
 
     def post(self, request, *args, **kwargs):
-        print(f"POST: {request.POST}, FILES: {request.FILES}")
+        # self.__logger.debug(f"POST: {request.POST}, FILES: {request.FILES}")
         form = forms.CsvInputForm(request.POST, request.FILES)
         if form.is_valid():
-            print("SettingDiffColumnView.post form.is_valid()")
+            # self.__logger.debug("SettingDiffColumnView.post form.is_valid()")
             cleaned_data = form.clean()
             csv1: pd.DataFrame = self.__csv_to_dataframe(cleaned_data['csv1'], cleaned_data['csv1_no_header'])
             csv2: pd.DataFrame = self.__csv_to_dataframe(cleaned_data['csv2'], cleaned_data['csv2_no_header'])
@@ -69,8 +69,8 @@ class SettingDiffColumnView(View):
             }
             return render(request, 'pages/setting-diff-column.html', context)
         else:
-            print("SettingDiffColumnView.post form.is_valid() is false")
-            print(f"form-error {form.errors}")
+            # self.__logger.debug("SettingDiffColumnView.post form.is_valid() is false")
+            # self.__logger.debug(f"form-error {form.errors}")
             context = {
                 'form': form
             }
@@ -82,19 +82,21 @@ class SettingDiffColumnView(View):
             encode = self.__get_upload_csv_encode(lines)
             lines_data = [str(line, encoding=encode) for line in lines]
             reader = csv.reader(lines_data)
-            self.__logger.debug(f"reader = {reader}")
-            self.__logger.debug(f"reader.dialect = {reader.dialect}")
-            self.__logger.debug(f"reader.line_num = {reader.line_num}")
+            # self.__logger.debug(f"reader = {reader}")
+            # self.__logger.debug(f"reader.dialect = {reader.dialect}")
+            # self.__logger.debug(f"reader.line_num = {reader.line_num}")
             header = []
             header_format = "ヘッダー{header}"
             if is_no_header:
-                header_read = list(reader)
-                row = header_read.pop()
-                for i in range(row.len()):
-                    header.append(header_format.format({'header': i + 1}))
+                row = next(reader)
+                for i in range(len(row)):
+                    header.append(header_format.format(header=(i+1)))
+                reader = csv.reader(lines_data)
             else:
                 header = next(reader)
-            self.__logger.debug(f"header = {header}")
+            # self.__logger.debug(f"header = {header}")
+            # self.__logger.debug(f"reader = {reader}")
+            # self.__logger.debug(f"reader.line_num = {reader.line_num}")
             result = pd.DataFrame(data=reader, index=None, columns=header)
         self.__logger.debug(f"result = {result}")
         return result
@@ -103,7 +105,7 @@ class SettingDiffColumnView(View):
         for encode in settings.CSV_FILE_ENCODE_LIST:
             try:
                 lines = [str(line, encoding=encode) for line in file_data]
-                self.__logger.debug(f"{__name__}: lines = {lines}m encode={encode}")
+                # self.__logger.debug(f"{__name__}: lines = {lines}m encode={encode}")
                 csv.reader(lines)
             except UnicodeDecodeError as e:
                 self.__logger.debug(f"{__name__}: error = {e}")
