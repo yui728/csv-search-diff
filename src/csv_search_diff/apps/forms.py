@@ -2,16 +2,7 @@ from django import forms
 from django.forms.formsets import formset_factory, BaseFormSet
 
 
-class SetHiddenForm(forms.Form):
-    def set_hidden(self, is_hidden: bool, fields=None) -> None:
-        if fields is None:
-            fields = []
-        for field in self.fields:
-            if (fields is None) or (field.name in fields):
-                field.is_hidden = is_hidden
-
-
-class CsvInputForm(SetHiddenForm):
+class CsvInputForm(forms.Form):
     csv1 = forms.fields.FileField(
         label='CSV1',
         required=True,
@@ -37,7 +28,7 @@ class CsvInputForm(SetHiddenForm):
     )
 
 
-class DiffColumnSettingForm(SetHiddenForm):
+class DiffColumnSettingForm(forms.Form):
     csv1_diff_col = forms.fields.ChoiceField(
         label='',
         required=True,

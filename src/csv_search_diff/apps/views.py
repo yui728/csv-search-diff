@@ -22,7 +22,15 @@ class TopView(View):
         return render(request, 'pages/index.html', context)
 
     def post(self, request, *args, **kwargs):
-        return redirect('/')
+        data = {
+            'csv1_no_header': request.session['csv1_no_header'],
+            'csv2_no_header': request.session['csv2_no_header']
+        }
+        request.session.flush()
+        context = {
+            'form': forms.CsvInputForm(data)
+        }
+        return render(request, 'pages/index.html', context)
 
 
 class SettingDiffColumnView(View):
@@ -34,17 +42,17 @@ class SettingDiffColumnView(View):
 
     def post(self, request, *args, **kwargs):
         # self.__logger.debug(f"POST: {request.POST}, FILES: {request.FILES}")
-        form = forms.CsvInputForm(request.POST, request.FILES)
-        if form.is_valid():
+        input_form = forms.CsvInputForm(request.POST, request.FILES)
+        if input_form.is_valid():
             # self.__logger.debug("SettingDiffColumnView.post form.is_valid()")
-            cleaned_data = form.clean()
+            cleaned_data = input_form.clean()
             csv1: pd.DataFrame = self.__csv_to_dataframe(cleaned_data['csv1'], cleaned_data['csv1_no_header'])
             csv2: pd.DataFrame = self.__csv_to_dataframe(cleaned_data['csv2'], cleaned_data['csv2_no_header'])
 
             request.session['csv1'] = csv1.to_json()
             request.session['csv2'] = csv2.to_json()
-            request.session['csv1_no_header'] = form.cleaned_data['csv1_no_header']
-            request.session['csv2_no_header'] = form.cleaned_data['csv2_no_header']
+            request.session['csv1_no_header'] = input_form.cleaned_data['csv1_no_header']
+            request.session['csv2_no_header'] = input_form.cleaned_data['csv2_no_header']
             request.session.set_expiry(settings.SESSION_MAX_SECOND)
 
             diff_column_max =\
@@ -63,7 +71,8 @@ class SettingDiffColumnView(View):
                 ]
             context = {
                 'formset': formset,
-                'back_form': form,
+                'back_form': input_form,
+                'bakc_url': reverse('apps:index'),
                 'csv1': csv1,
                 'csv2': csv2
             }
@@ -72,7 +81,7 @@ class SettingDiffColumnView(View):
             # self.__logger.debug("SettingDiffColumnView.post form.is_valid() is false")
             # self.__logger.debug(f"form-error {form.errors}")
             context = {
-                'form': form
+                'form': input_form
             }
             return render(request, 'pages/index.html', context)
 
@@ -86,7 +95,7 @@ class SettingDiffColumnView(View):
             # self.__logger.debug(f"reader.dialect = {reader.dialect}")
             # self.__logger.debug(f"reader.line_num = {reader.line_num}")
             header = []
-            header_format = "ヘッダー{header}"
+            header_format = "列{header}"
             if is_no_header:
                 row = next(reader)
                 for i in range(len(row)):
