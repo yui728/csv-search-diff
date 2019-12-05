@@ -15,11 +15,10 @@ $("#add_diff_row").click(function(){
 
     // 新規IDとnameに書き換え
     $(" select", new_diff_cols).each(function(index, elem){
-        elem.attr("id") = attr.attr("id").replace(REPLACE_PATTERN, next_num);
-        elem.
+        elem = $(elem);
+        elem.attr("id", elem.attr("id").replace(REPLACE_PATTERN, next_num));
+        elem.attr("name", elem.attr("name").replace(REPLACE_PATTERN, next_num));
     });
-    select_elements.attr("id") = select_elements.attr("id").replace(REPLACE_PATTERN, next_num);
-    select_elements.attr("name") = select_elements.attr("name").replace(REPLACE_PATTERN, next_num);
 
     // 選択を初期状態に戻す
     $(" select", new_diff_cols).val("");
