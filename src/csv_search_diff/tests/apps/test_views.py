@@ -85,15 +85,15 @@ class SettingDiffColumnViewTest(CsvSettingTestCase):
         self.assertTrue(self.client.session.get('csv1'))
         self.assertTrue(self.client.session.get('csv2'))
         csv1 = self.client.session.get('csv1')
-        self.assertTrue('ヘッダー1'.encode('unicode_escape') in csv1.encode('utf-8'))
-        self.assertTrue('ヘッダー2'.encode('unicode_escape') in csv1.encode('utf-8'))
-        self.assertTrue('ヘッダー3'.encode('unicode_escape') in csv1.encode('utf-8'))
-        self.assertTrue('ヘッダー4'.encode('unicode_escape') in csv1.encode('utf-8'))
+        self.assertTrue('列1'.encode('unicode_escape') in csv1.encode('utf-8'))
+        self.assertTrue('列2'.encode('unicode_escape') in csv1.encode('utf-8'))
+        self.assertTrue('列3'.encode('unicode_escape') in csv1.encode('utf-8'))
+        self.assertTrue('列4'.encode('unicode_escape') in csv1.encode('utf-8'))
         csv2 = self.client.session.get('csv2')
-        self.assertTrue('ヘッダー1'.encode('unicode_escape') in csv2.encode('utf-8'))
-        self.assertTrue('ヘッダー2'.encode('unicode_escape') in csv2.encode('utf-8'))
-        self.assertTrue('ヘッダー3'.encode('unicode_escape') in csv2.encode('utf-8'))
-        self.assertTrue('ヘッダー4'.encode('unicode_escape') in csv2.encode('utf-8'))
+        self.assertTrue('列1'.encode('unicode_escape') in csv2.encode('utf-8'))
+        self.assertTrue('列2'.encode('unicode_escape') in csv2.encode('utf-8'))
+        self.assertTrue('列3'.encode('unicode_escape') in csv2.encode('utf-8'))
+        self.assertTrue('列4'.encode('unicode_escape') in csv2.encode('utf-8'))
 
 
 class SettingKeyColumnViewTest(CsvSettingTestCase):
