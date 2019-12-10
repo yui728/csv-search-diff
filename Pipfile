@@ -7,10 +7,10 @@ verify_ssl = true
 django-stubs = "*"
 
 [packages]
-django = "*"
+django = "~=2.2"
 django-bootstrap4 = "*"
 pandas = "*"
 selenium = "*"
 
 [requires]
-python_version = "3.7"
+python_version = "3.8"
