@@ -11,7 +11,7 @@ from selenium.webdriver.support import expected_conditions as EC
 import logging
 
 
-class CsvSettingsStaticLiveServerTestCaseForGecko(testing.CsvSettingsStaticLiverServerTestCase):
+class CsvSettingsStaticLiveServerTestCaseForFirefox(testing.CsvSettingsStaticLiverServerTestCase):
     SERVER_RESPONSE_WAIT_SEC = 10
 
     def __init__(self, *args, **kwargs):
@@ -32,7 +32,7 @@ class CsvSettingsStaticLiveServerTestCaseForGecko(testing.CsvSettingsStaticLiver
         super().tearDownClass()
 
 
-class IndexTestCase(CsvSettingsStaticLiveServerTestCaseForGecko):
+class IndexTestCase(CsvSettingsStaticLiveServerTestCaseForFirefox):
     def test_access_01(self):
         """トップページの初期表示確認"""
         self.selenium.get('%s%s' % (self.live_server_url, '/'))
@@ -96,7 +96,7 @@ class IndexTestCase(CsvSettingsStaticLiveServerTestCaseForGecko):
         self.assertEqual('csv2', active_element.get_attribute('name'))
 
 
-class SettingDiffColumnTestCaseForGecko(CsvSettingsStaticLiveServerTestCaseForGecko):
+class SettingDiffColumnTestCase(CsvSettingsStaticLiveServerTestCaseForFirefox):
 
     def __assert_csv_table(self, table: WebElement, expects: dict) -> None:
         self.assertTrue(table)

@@ -14,4 +14,4 @@ selenium = "*"
 chromedriver-binary = "==79.0.3945.36.0"
 
 [requires]
-python_version = "3.8"
+python_version = "3.7"
