@@ -604,13 +604,14 @@ class SettingDiffColumnTestCase(CsvSettingsStaticLiveServerTestCaseForChrome):
         self.assertTrue(next_button)
         self.screenshot_manager.save_screenshot(self.selenium)
         next_button.click()
+        # self.screenshot_manager.save_screenshot(self.selenium)
         alert = self.selenium.switch_to.alert
-        self.screenshot_manager.save_screenshot(self.selenium)
-        self.assertTrue(alert)
-        self.screenshot_manager.save_screenshot(self.selenium)
+        # self.screenshot_manager.save_screenshot(self.selenium)
+        # self.assertTrue(alert)
+        # self.screenshot_manager.save_screenshot(self.selenium)
 
-        wait = WebDriverWait(self.selenium, self.SERVER_RESPONSE_WAIT_SEC)
         alert.accept()
+        wait = WebDriverWait(self.selenium, self.SERVER_RESPONSE_WAIT_SEC)
         i = 0
         while i < self.MAX_TIMEOUT_RETRY:
             try:
