@@ -4,6 +4,7 @@ import time
 from pathlib import Path
 from selenium.webdriver.remote.webdriver import WebDriver
 import inspect
+import logging
 
 
 class CsvSettingsStaticLiverServerTestCase(StaticLiveServerTestCase):
@@ -19,8 +20,10 @@ class ScreenShotManager:
         super().__init__(*args, **kwargs)
         fmt: str = '%Y%m%d'
         self.__ymd = time.strftime(fmt, time.localtime())
+        # logger = logging.getLogger(__name__)
         try:
-            frame = self.__get_caller_frame_info()
+            frame = self.__get_caller_frame_info(1)
+            # logger.debug(f"frame = {frame}")
             module_name = self.__get_caller_module_name(frame)
         finally:
             del frame
@@ -43,6 +46,7 @@ class ScreenShotManager:
     def save_screenshot(self, web_driver: WebDriver, call_frame_depth: int = 1):
         fmt: str = '{0:s}_{1:s}_{2:0>2d}.jpg'
         glob_pattern: str = '{0:s}_{1:s}_[0-9][0-9].jpg'
+        # logger = logging.getLogger(__name__)
 
         try:
             caller_frame = self.__get_caller_frame_info(call_frame_depth)
@@ -52,9 +56,13 @@ class ScreenShotManager:
             del caller_frame
 
         files = self.screenshot_dir.glob(glob_pattern.format(caller_class_name, caller_function_name))
-        index_num = len(files) + 1
+        index_num = len(list(files)) + 1
 
-        web_driver.save_screenshot(fmt.format(caller_class_name, caller_function_name, index_num))
+        screen_shot_path = str(
+                self.screenshot_dir.joinpath(
+                    fmt.format(caller_class_name, caller_function_name, index_num)))
+        # logger.debug(screen_shot_path)
+        web_driver.save_screenshot(screen_shot_path)
 
     def __get_caller_frame_info(self, depth: int = 0):
         frame_records = inspect.stack()
@@ -64,7 +72,7 @@ class ScreenShotManager:
     def __get_caller_class_name(self, frame_info: inspect.FrameInfo):
         arginfo = inspect.getargvalues(frame_info.frame)
 
-        return arginfo.locals['self'].__class__.__name__ if 'self' in arginfo.locals else None
+        return arginfo.locals['self'].__class__.__name__ if 'self' in arginfo.locals else arginfo.locals['cls'].__name__
 
     def __get_caller_function_name(self, frame_info: inspect.FrameInfo):
         return frame_info.function
