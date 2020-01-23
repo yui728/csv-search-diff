@@ -64,3 +64,7 @@ LOGGING = {
         },
     },
 }
+
+# メディアファイル設定
+# 保存先ディレクトリ
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media_root')

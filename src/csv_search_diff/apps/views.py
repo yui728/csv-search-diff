@@ -1,33 +1,128 @@
 from django.shortcuts import render, redirect
-
-# Create your views here.
 from django.http import HttpResponse
 from django.views import View
+from django.core.files.uploadedfile import UploadedFile
+from django.conf import settings
+from django.urls import reverse
 import urllib
 import csv
+import _csv
 import pandas as pd
-from django.urls import reverse
 import logging
+import copy
 from . import forms
 
 
 class TopView(View):
     def get(self, request, *args, **kwargs):
+        request.session.flush()
         context = {
             'form': forms.CsvInputForm()
         }
         return render(request, 'pages/index.html', context)
 
     def post(self, request, *args, **kwargs):
-        return redirect('/')
+        data = {
+            'csv1_no_header': request.session['csv1_no_header'],
+            'csv2_no_header': request.session['csv2_no_header']
+        }
+        request.session.flush()
+        context = {
+            'form': forms.CsvInputForm(data)
+        }
+        return render(request, 'pages/index.html', context)
 
 
 class SettingDiffColumnView(View):
+
+    __logger = logging.getLogger(__name__)
+
     def get(self, request, *args, **kwargs):
         return redirect('/')
 
     def post(self, request, *args, **kwargs):
-        return render(request, 'pages/setting-diff-column.html')
+        # self.__logger.debug(f"POST: {request.POST}, FILES: {request.FILES}")
+        input_form = forms.CsvInputForm(request.POST, request.FILES)
+        if input_form.is_valid():
+            # self.__logger.debug("SettingDiffColumnView.post form.is_valid()")
+            cleaned_data = input_form.clean()
+            csv1: pd.DataFrame = self.__csv_to_dataframe(cleaned_data['csv1'], cleaned_data['csv1_no_header'])
+            csv2: pd.DataFrame = self.__csv_to_dataframe(cleaned_data['csv2'], cleaned_data['csv2_no_header'])
+
+            request.session['csv1'] = csv1.to_json()
+            request.session['csv2'] = csv2.to_json()
+            request.session['csv1_no_header'] = input_form.cleaned_data['csv1_no_header']
+            request.session['csv2_no_header'] = input_form.cleaned_data['csv2_no_header']
+            request.session.set_expiry(settings.SESSION_MAX_SECOND)
+
+            diff_column_max =\
+                (len(csv1.columns) - 1) if len(csv1.columns) >= len(csv2.columns) else (len(csv2.columns) - 1)
+            diff_column_setting_form_set = forms.create_formset(
+                forms.DiffColumnSettingForm,
+                max_num=diff_column_max
+            )
+            formset = diff_column_setting_form_set()
+            for form in formset.forms:
+                form.fields['csv1_diff_col'].choices = [
+                    (value, text) for (value, text) in enumerate(csv1.columns)
+                ]
+                form.fields['csv2_diff_col'].choices = [
+                    (value, text) for (value, text) in enumerate(csv2.columns)
+                ]
+            context = {
+                'formset': formset,
+                'back_form': input_form,
+                'bakc_url': reverse('apps:index'),
+                'csv1': csv1,
+                'csv2': csv2
+            }
+            return render(request, 'pages/setting-diff-column.html', context)
+        else:
+            # self.__logger.debug("SettingDiffColumnView.post form.is_valid() is false")
+            # self.__logger.debug(f"form-error {form.errors}")
+            context = {
+                'form': input_form
+            }
+            return render(request, 'pages/index.html', context)
+
+    def __csv_to_dataframe(self, file_data: UploadedFile, is_no_header: bool) -> pd.DataFrame:
+        with file_data.open(mode='rt') as f:
+            lines = f.readlines()
+            encode = self.__get_upload_csv_encode(lines)
+            lines_data = [str(line, encoding=encode) for line in lines]
+            reader = csv.reader(lines_data)
+            # self.__logger.debug(f"reader = {reader}")
+            # self.__logger.debug(f"reader.dialect = {reader.dialect}")
+            # self.__logger.debug(f"reader.line_num = {reader.line_num}")
+            header = []
+            header_format = "列{header}"
+            if is_no_header:
+                row = next(reader)
+                for i in range(len(row)):
+                    header.append(header_format.format(header=(i+1)))
+                reader = csv.reader(lines_data)
+            else:
+                header = next(reader)
+            # self.__logger.debug(f"header = {header}")
+            # self.__logger.debug(f"reader = {reader}")
+            # self.__logger.debug(f"reader.line_num = {reader.line_num}")
+            result = pd.DataFrame(data=reader, index=None, columns=header)
+        self.__logger.debug(f"result = {result}")
+        return result
+
+    def __get_upload_csv_encode(self, file_data: list) -> str:
+        for encode in settings.CSV_FILE_ENCODE_LIST:
+            try:
+                lines = [str(line, encoding=encode) for line in file_data]
+                # self.__logger.debug(f"{__name__}: lines = {lines}m encode={encode}")
+                csv.reader(lines)
+            except UnicodeDecodeError as e:
+                self.__logger.debug(f"{__name__}: error = {e}")
+                continue
+            except _csv.Error as e:
+                self.__logger.debug(f"{__name__}: error = {e}")
+                continue
+            return encode
 
 
 class SettingKeyColumnView(View):

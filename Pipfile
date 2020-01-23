@@ -7,9 +7,11 @@ verify_ssl = true
 django-stubs = "*"
 
 [packages]
-django = "*"
+django = "~=2.2"
 django-bootstrap4 = "*"
 pandas = "*"
+selenium = "*"
+chromedriver-binary = "==79.0.3945.36.0"
 
 [requires]
 python_version = "3.7"
