@@ -1,5 +1,5 @@
 from django.test.testcases import TestCase
-from src.csv_search_diff.apps import forms
+from apps import forms
 from . import test_settings
 from logging import getLogger
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -282,3 +282,60 @@ class CreateFormSetTest(TestCase):
             ]
         self.assertFalse(formset.is_valid())
         self.assertTrue('比較項目に設定する列の数が多すぎます。¥nキー項目として最低1列が必要です。' in formset.non_field_errors())
+
+
+class SettingKeyColumnFormTest(TestCase):
+    def test_form_01(self) -> None:
+        """CSV1のキー項目と、CSV2のキー項目に1つずつ指定できる"""
+        data = {
+            'csv1_key_col': 'ヘッダー1',
+            'csv2_key_col': 'ヘッダー1'
+        }
+        form = forms.KeyColumnSettingForm(data)
+        form.fields['csv1_key_col'].choices = [
+             ('ヘッダー1', 'ヘッダー1'),
+             ('ヘッダー2', 'ヘッダー2')
+        ]
+        form.fields['csv2_key_col'].choices = [
+             ('ヘッダー1', 'ヘッダー1'),
+             ('ヘッダー2', 'ヘッダー2')
+        ]
+        self.assertTrue(form.is_valid())
+
+    def test_form_02(self) -> None:
+        """CSV1のキー項目が0個の場合はエラー"""
+        data = {
+            'csv1_key_col': None,
+            'csv2_key_col': 'ヘッダー1'
+        }
+        form = forms.KeyColumnSettingForm(data)
+        form.fields['csv1_key_col'].choices = [
+             ('ヘッダー1', 'ヘッダー1'),
+             ('ヘッダー2', 'ヘッダー2')
+        ]
+        form.fields['csv2_key_col'].choices = [
+             ('ヘッダー1', 'ヘッダー1'),
+             ('ヘッダー2', 'ヘッダー2')
+        ]
+        self.assertFalse(form.is_valid())
+        self.assertTrue(form.errors['csv1_key_col'])
+
+    def test_form_03(self) -> None:
+        """CSV2のキー項目が0個の場合はエラー"""
+        data = {
+            'csv1_key_col': 'ヘッダー1',
+            'csv2_key_col': None
+        }
+        form = forms.KeyColumnSettingForm(data)
+        form.fields['csv1_key_col'].choices = [
+            ('ヘッダー1', 'ヘッダー1'),
+            ('ヘッダー2', 'ヘッダー2')
+        ]
+
+        form.fields['csv2_key_col'].choices = [
+             ('ヘッダー1', 'ヘッダー1'),
+             ('ヘッダー2', 'ヘッダー2')
+        ]
+        self.assertFalse(form.is_valid())
+        self.assertTrue(form.errors['csv2_key_col'])
+

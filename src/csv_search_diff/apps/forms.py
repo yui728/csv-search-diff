@@ -41,9 +41,20 @@ class DiffColumnSettingForm(forms.Form):
         widget=forms.widgets.Select
     )
 
-# class KeyColumnSettingForm(forms.Form):
-#
-#
+
+class KeyColumnSettingForm(forms.Form):
+    csv1_key_col = forms.fields.ChoiceField(
+        label='',
+        required=True,
+        widget=forms.widgets.Select
+    )
+
+    csv2_key_col = forms.fields.ChoiceField(
+        label='',
+        required=True,
+        widget=forms.widgets.Select
+    )
+
 # class ConfirmForm(forms.Form):
 #
 #
