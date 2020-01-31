@@ -11,6 +11,7 @@ import pandas as pd
 import logging
 import copy
 from . import forms
+from . import utility as util
 
 
 class TopView(View):
@@ -55,8 +56,10 @@ class SettingDiffColumnView(View):
             request.session['csv2_no_header'] = input_form.cleaned_data['csv2_no_header']
             request.session.set_expiry(settings.SESSION_MAX_SECOND)
 
-            diff_column_max =\
-                (len(csv1.columns) - 1) if len(csv1.columns) >= len(csv2.columns) else (len(csv2.columns) - 1)
+            diff_column_max = util.CalcColumnCountUtility.get_max_diff_column_count(
+                csv1,
+                csv2
+            )
             diff_column_setting_form_set = forms.create_formset(
                 forms.DiffColumnSettingForm,
                 max_num=diff_column_max
@@ -72,7 +75,7 @@ class SettingDiffColumnView(View):
             context = {
                 'formset': formset,
                 'back_form': input_form,
-                'bakc_url': reverse('apps:index'),
+                'back_url': reverse('apps:index'),
                 'csv1': csv1,
                 'csv2': csv2
             }
@@ -130,7 +133,34 @@ class SettingKeyColumnView(View):
         return redirect('/')
 
     def post(self, request, *args, **kwargs):
-        return render(request, 'pages/setting-key-column.html')
+        # csv1: pd.DataFrame = pd.read_json(request.session['csv1'])
+        # csv2: pd.DataFrame = pd.read_json(request.session['csv2'])
+        # diff_column_setting_form_set = forms.create_formset(
+        #     forms.DiffColumnSettingForm,
+        #     max_num=diff_column_max
+        # )
+        # formset = diff_column_setting_form_set()
+        # input_form = forms.DiffColumnSettingForm(request.POST)
+        # if input_form.is_valid():
+        #     return render(request, 'pages/setting-key-column.html')
+        # else:
+        #     context = {
+        #         'form': input_form
+        #     }
+        #     return render(request, 'pages/setting-diff-column.html', context)
+        context = {
+            'csv1': pd.DataFrame(columns=range(5)),
+            'csv2': pd.DataFrame(columns=range(5)),
+            'formset': forms.create_formset(
+                forms.KeyColumnSettingForm,
+                max_num=3
+            ),
+            'diff_column_list': [
+                'CSV11のcol1とCSV2のcol1を比較する',
+                'CSV11のcol2とCSV2のcol2を比較する',
+            ]
+        }
+        return render(request, 'pages/setting-key-column.html', context)
 
 
 class ConfirmView(View):
@@ -263,3 +293,4 @@ setting_key_column_view = SettingKeyColumnView.as_view()
 confirm_view = ConfirmView.as_view()
 result_view = ResultView.as_view()
 result_csv_download_view = ResultCsvDownloadView.as_view()
+

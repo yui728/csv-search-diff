@@ -1,9 +1,9 @@
-from django.test import TestCase
+from django.test import TestCase, SimpleTestCase
 from django.urls import reverse
 import urllib
 from . import test_settings
 import logging
-from pprint import pprint
+import pandas as pd
 
 
 class CsvSettingTestCase(TestCase):
@@ -104,12 +104,41 @@ class SettingKeyColumnViewTest(CsvSettingTestCase):
 
     def test_setting_key_columns_post(self):
         """setting key columns page post-access"""
+        col1 = ['col{}'.format(i+1) for i in range(4)]
+        col2 = ['col{}'.format(i+1) for i in range(5)]
+        csv1: pd.DataFrae = pd.DataFrame(columns=col1)
+        csv2: pd.DataFrae = pd.DataFrame(columns=col2)
+        session_data = {
+            'csv1': csv1.to_json(),
+            'csv2': csv2.to_json(),
+            'csv1_no_header': False,
+            'csv2_no_header': False
+        }
+        session = self.client.session
+        session.update(session_data)
+        session.save()
         response = self.client.post(
             reverse('apps:setting_key_column'),
-            {'csv1_diff_col': ['col3', 'col4'],
-             'csv2_diff_col': ['col3', 'col4']}
+            # {'csv1_diff_col': ['col3', 'col4'],
+            #  'csv2_diff_col': ['col3', 'col4']}
+            {'form-TOTAL_FORMS': 2,
+             'form-INITIAL_FORMS': 0,
+             'form-MAX_NUM_FORMS': 3,
+             'form-0-csv1_diff_col': 'col3',
+             'form-1-csv1_diff_col': 'csv4',
+             'form-0-csv2_diff_col': 'col3',
+             'form-1-csv2_diff_col': 'col4'}
         )
         self.assertTemplateUsed(response, 'pages/setting-key-column.html')
+
+    def test_setting_key_column_post_02(self):
+        """setting key columns page post-access with no-diff-column"""
+        response = self.client.post(
+            reverse('apps:setting_key_column'),
+            {'form-0-csv1_diff_col': '',
+             'form-0-csv2_diff_col': ''}
+        )
+        self.assertTemplateUsed(response, 'pages/setting-diff-column.html')
 
 
 class ConfirmViewTest(CsvSettingTestCase):
@@ -154,8 +183,4 @@ class ResultCsvDownloadViewTest(CsvSettingTestCase):
             response.get('Content-Disposition'),
             "attachment; filename*=UTF-8\'\'{}".format(filename)
         )
-
-
-
-
 
