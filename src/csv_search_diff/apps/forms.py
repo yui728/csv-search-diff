@@ -61,11 +61,22 @@ class KeyColumnSettingForm(forms.Form):
 # class ResultForm(forms.Form):
 
 
-def create_formset(cls, max_num):
+def create_formset(cls, max_num, min_num=1):
 
     return formset_factory(
         cls,
         max_num=max_num,
+        min_num=min_num,
         extra=1,
-        validate_max=True
+        validate_max=True,
+        validate_min=True
     )
+
+
+def set_choices(formset: BaseFormSet, choices: dict) -> BaseFormSet:
+    for form in formset.forms:
+        for key, values in choices.items():
+            form.fields[key].choices = [
+                (value, text) for (value, text) in enumerate(values)
+            ]
+    return formset

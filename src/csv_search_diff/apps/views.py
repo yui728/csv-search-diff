@@ -39,7 +39,23 @@ class SettingDiffColumnView(View):
     __logger = logging.getLogger(__name__)
 
     def get(self, request, *args, **kwargs):
-        return redirect('/')
+        # print('SettingDiffColumnView GET')
+        if request.session.get('csv1') and request.session.get('csv2'):
+            request.session.set_expiry(settings.SESSION_MAX_SECOND)
+            csv1 = pd.read_json(request.session['csv1'])
+            csv2 = pd.read_json(request.session['csv2'])
+            formset = self.__create_formset(csv1, csv2)
+            back_form = forms.CsvInputForm(request.session)
+            context = {
+                'formset': formset,
+                'back_form': back_form,
+                'back_url': reverse('apps:index'),
+                'csv1': csv1,
+                'csv2': csv2
+            }
+            return render(request, 'pages/setting-diff-column.html', context)
+        else:
+            return redirect('/')
 
     def post(self, request, *args, **kwargs):
         # self.__logger.debug(f"POST: {request.POST}, FILES: {request.FILES}")
@@ -56,22 +72,7 @@ class SettingDiffColumnView(View):
             request.session['csv2_no_header'] = input_form.cleaned_data['csv2_no_header']
             request.session.set_expiry(settings.SESSION_MAX_SECOND)
 
-            diff_column_max = util.CalcColumnCountUtility.get_max_diff_column_count(
-                csv1,
-                csv2
-            )
-            diff_column_setting_form_set = forms.create_formset(
-                forms.DiffColumnSettingForm,
-                max_num=diff_column_max
-            )
-            formset = diff_column_setting_form_set()
-            for form in formset.forms:
-                form.fields['csv1_diff_col'].choices = [
-                    (value, text) for (value, text) in enumerate(csv1.columns)
-                ]
-                form.fields['csv2_diff_col'].choices = [
-                    (value, text) for (value, text) in enumerate(csv2.columns)
-                ]
+            formset = self.__create_formset(csv1, csv2)
             context = {
                 'formset': formset,
                 'back_form': input_form,
@@ -127,40 +128,72 @@ class SettingDiffColumnView(View):
                 continue
             return encode
 
+    def __create_formset(self, csv1: pd.DataFrame, csv2: pd.DataFrame):
+        diff_column_max = util.CalcColumnCountUtility.get_max_diff_column_count(
+            csv1,
+            csv2
+        )
+        diff_column_setting_form_set = forms.create_formset(
+            forms.DiffColumnSettingForm,
+            max_num=diff_column_max
+        )
+        formset = diff_column_setting_form_set()
+        choices = {
+            'csv1_diff_col': csv1.columns,
+            'csv2_diff_col': csv2.columns
+        }
+        formset = forms.set_choices(formset, choices)
+        return formset
+
 
 class SettingKeyColumnView(View):
     def get(self, request, *args, **kwargs):
-        return redirect('/')
+        if self.__session_check(request.session):
+            pass
+        else:
+            return redirect('/')
 
     def post(self, request, *args, **kwargs):
-        # csv1: pd.DataFrame = pd.read_json(request.session['csv1'])
-        # csv2: pd.DataFrame = pd.read_json(request.session['csv2'])
-        # diff_column_setting_form_set = forms.create_formset(
-        #     forms.DiffColumnSettingForm,
-        #     max_num=diff_column_max
-        # )
-        # formset = diff_column_setting_form_set()
-        # input_form = forms.DiffColumnSettingForm(request.POST)
-        # if input_form.is_valid():
-        #     return render(request, 'pages/setting-key-column.html')
-        # else:
-        #     context = {
-        #         'form': input_form
-        #     }
-        #     return render(request, 'pages/setting-diff-column.html', context)
-        context = {
-            'csv1': pd.DataFrame(columns=range(5)),
-            'csv2': pd.DataFrame(columns=range(5)),
-            'formset': forms.create_formset(
-                forms.KeyColumnSettingForm,
-                max_num=3
-            ),
-            'diff_column_list': [
-                'CSV11のcol1とCSV2のcol1を比較する',
-                'CSV11のcol2とCSV2のcol2を比較する',
-            ]
-        }
-        return render(request, 'pages/setting-key-column.html', context)
+        csv1: pd.DataFrame = pd.read_json(request.session['csv1'])
+        csv2: pd.DataFrame = pd.read_json(request.session['csv2'])
+        key_column_setting_formset = forms.create_formset(
+                    forms.KeyColumnSettingForm,
+                    max_num=3
+                )
+        diff_column_form_max = util.CalcColumnCountUtility.get_max_diff_column_count(
+            csv1,
+            csv2
+        )
+        diff_column_setting_formset = forms.create_formset(
+            forms.DiffColumnSettingForm,
+            max_num=diff_column_form_max
+        )
+        check_formset = diff_column_setting_formset(request.POST)
+        print(f"form_set.is_valid() = {check_formset.is_valid()}")
+        print(f"form_set.errors = {check_formset.errors}")
+
+        if check_formset.is_valid():
+            context = {
+                'csv1': csv1,
+                'csv2': csv2,
+                'formset': form_set,
+                'diff_column_list': [
+                    'CSV1のcol1とCSV2のcol1を比較する',
+                    'CSV1のcol2とCSV2のcol2を比較する',
+                ]
+            }
+            return render(request, 'pages/setting-key-column.html', context)
+        else:
+            return redirect(reverse('apps:setting_diff_column'))
+
+    def __session_check(self, session):
+        return session.get('csv1') \
+               and session.get('csv2') \
+               and session.get('csv1_diff_col') \
+               and session.get('csv2_diff_col')
+
+    def __create_formset(self, csv1, csv2):
+        pass
 
 
 class ConfirmView(View):

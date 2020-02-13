@@ -98,16 +98,16 @@ class SettingDiffColumnViewTest(CsvSettingTestCase):
 
 class SettingKeyColumnViewTest(CsvSettingTestCase):
     def test_setting_key_columns_get(self):
-        """setting key columns page get-access"""
+        """キー項目設定画面にGETアクセスすると、トップ画面に遷移する"""
         response = self.client.get('/setting_key_column')
         self.assertRedirects(response, '/')
 
-    def test_setting_key_columns_post(self):
-        """setting key columns page post-access"""
+    def test_setting_key_columns_post_01(self):
+        """キー項目設定画面に比較項目のフォーム情報をポストすると、キー項目設定画面を表示する"""
         col1 = ['col{}'.format(i+1) for i in range(4)]
         col2 = ['col{}'.format(i+1) for i in range(5)]
-        csv1: pd.DataFrae = pd.DataFrame(columns=col1)
-        csv2: pd.DataFrae = pd.DataFrame(columns=col2)
+        csv1: pd.DataFrame = pd.DataFrame(columns=col1)
+        csv2: pd.DataFrame = pd.DataFrame(columns=col2)
         session_data = {
             'csv1': csv1.to_json(),
             'csv2': csv2.to_json(),
@@ -119,26 +119,101 @@ class SettingKeyColumnViewTest(CsvSettingTestCase):
         session.save()
         response = self.client.post(
             reverse('apps:setting_key_column'),
-            # {'csv1_diff_col': ['col3', 'col4'],
-            #  'csv2_diff_col': ['col3', 'col4']}
             {'form-TOTAL_FORMS': 2,
              'form-INITIAL_FORMS': 0,
              'form-MAX_NUM_FORMS': 3,
              'form-0-csv1_diff_col': 'col3',
-             'form-1-csv1_diff_col': 'csv4',
+             'form-1-csv1_diff_col': 'col4',
              'form-0-csv2_diff_col': 'col3',
              'form-1-csv2_diff_col': 'col4'}
         )
         self.assertTemplateUsed(response, 'pages/setting-key-column.html')
 
-    def test_setting_key_column_post_02(self):
-        """setting key columns page post-access with no-diff-column"""
+    def test_setting_key_columns_post_02(self):
+        """キー項目設定画面に比較項目設定のフォーム情報を0件POSTすると、比較項目設定画面へリダイレクトする"""
+        col1 = ['col{}'.format(i+1) for i in range(4)]
+        col2 = ['col{}'.format(i+1) for i in range(5)]
+        csv1: pd.DataFrame = pd.DataFrame(columns=col1)
+        csv2: pd.DataFrame = pd.DataFrame(columns=col2)
+        session_data = {
+            'csv1': csv1.to_json(),
+            'csv2': csv2.to_json(),
+            'csv1_no_header': False,
+            'csv2_no_header': False
+        }
+        session = self.client.session
+        session.update(session_data)
+        session.save()
         response = self.client.post(
             reverse('apps:setting_key_column'),
-            {'form-0-csv1_diff_col': '',
-             'form-0-csv2_diff_col': ''}
+            {'form-TOTAL_FORMS': 0,
+             'form-INITIAL_FORMS': 0,
+             'form-MAX_NUM_FORMS': 3}
+        )
+        # self.assertTemplateNotUsed(response, 'pages/setting-diff-column.html')
+        self.assertRedirects(response, reverse('apps:setting_diff_column'))
+
+    def test_setting_key_columns_post_03(self):
+        """キー項目設定画面に比較項目設定のフォーム情報を最大件数を超えてポストすると、比較項目設定画面を表示する"""
+        col1 = ['col{}'.format(i + 1) for i in range(4)]
+        col2 = ['col{}'.format(i + 1) for i in range(5)]
+        csv1: pd.DataFrame = pd.DataFrame(columns=col1)
+        csv2: pd.DataFrame = pd.DataFrame(columns=col2)
+        session_data = {
+            'csv1': csv1.to_json(),
+            'csv2': csv2.to_json(),
+            'csv1_no_header': False,
+            'csv2_no_header': False
+        }
+        session = self.client.session
+        session.update(session_data)
+        session.save()
+        response = self.client.post(
+            reverse('apps:setting_key_column'),
+            {'form-TOTAL_FORMS': 3,
+             'form-INITIAL_FORMS': 0,
+             'form-MAX_NUM_FORMS': 3,
+             'form-0-csv1_diff_col': 'col1',
+             'form-1-csv1_diff_col': 'col2',
+             'form-2-csv1_diff_col': 'col3',
+             'form-3-csv1_diff_col': 'col4',
+             'form-0-csv2_diff_col': 'col1',
+             'form-1-csv2_diff_col': 'col2',
+             'form-2-csv2_diff_col': 'col3',
+             'form-3-csv2_diff_col': 'col4'
+             }
         )
         self.assertTemplateUsed(response, 'pages/setting-diff-column.html')
+
+    def test_setting_key_columns_post_04(self):
+        """キー項目設定画面に表示する、比較項目設定の詳細を確認する"""
+        """setting key columns page post-access"""
+        col1 = ['列{}'.format(i + 1) for i in range(4)]
+        col2 = ['列{}'.format(i + 1) for i in range(5)]
+        csv1: pd.DataFrame = pd.DataFrame(columns=col1)
+        csv2: pd.DataFrame = pd.DataFrame(columns=col2)
+        session_data = {
+            'csv1': csv1.to_json(),
+            'csv2': csv2.to_json(),
+            'csv1_no_header': False,
+            'csv2_no_header': False
+        }
+        session = self.client.session
+        session.update(session_data)
+        session.save()
+        response = self.client.post(
+            reverse('apps:setting_key_column'),
+            {'form-TOTAL_FORMS': 2,
+             'form-INITIAL_FORMS': 0,
+             'form-MAX_NUM_FORMS': 3,
+             'form-0-csv1_diff_col': '列1',
+             'form-1-csv1_diff_col': '列2',
+             'form-0-csv2_diff_col': '列3',
+             'form-1-csv2_diff_col': '列4'}
+        )
+        self.assertTemplateUsed(response, 'pages/setting-key-column.html')
+        self.assertContains(response, 'CSV1の列1とCSV2の列3を比較する')
+        self.assertContains(response, 'CSV1の列2とCSV2の列4を比較する')
 
 
 class ConfirmViewTest(CsvSettingTestCase):
