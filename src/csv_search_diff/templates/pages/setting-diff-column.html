@@ -88,7 +88,9 @@
     {% csrf_token %}
 </form>
 <form method="POST" action="{% url 'apps:index' %}" id="back-form">
-    {{ back_form.as_hidden }}
+    {% for field in back_form %}
+    {{ field.as_hidden }}
+    {% endfor %}
     {% csrf_token %}
 </form>
 {% include "back_form.html" %}
