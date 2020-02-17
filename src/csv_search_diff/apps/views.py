@@ -44,7 +44,7 @@ class SettingDiffColumnView(View):
             request.session.set_expiry(settings.SESSION_MAX_SECOND)
             csv1 = pd.read_json(request.session['csv1'])
             csv2 = pd.read_json(request.session['csv2'])
-            formset = self.__create_formset(csv1, csv2)
+            formset = forms.create_setting_diff_column_formset(csv1, csv2)
             back_form = forms.CsvInputForm(request.session)
             context = {
                 'formset': formset,
@@ -72,7 +72,7 @@ class SettingDiffColumnView(View):
             request.session['csv2_no_header'] = input_form.cleaned_data['csv2_no_header']
             request.session.set_expiry(settings.SESSION_MAX_SECOND)
 
-            formset = self.__create_formset(csv1, csv2)
+            formset = forms.create_setting_diff_column_formset(csv1, csv2)
             context = {
                 'formset': formset,
                 'back_form': input_form,
@@ -128,23 +128,6 @@ class SettingDiffColumnView(View):
                 continue
             return encode
 
-    def __create_formset(self, csv1: pd.DataFrame, csv2: pd.DataFrame):
-        diff_column_max = util.CalcColumnCountUtility.get_max_diff_column_count(
-            csv1,
-            csv2
-        )
-        diff_column_setting_form_set = forms.create_formset(
-            forms.DiffColumnSettingForm,
-            max_num=diff_column_max
-        )
-        formset = diff_column_setting_form_set()
-        choices = {
-            'csv1_diff_col': csv1.columns,
-            'csv2_diff_col': csv2.columns
-        }
-        formset = forms.set_choices(formset, choices)
-        return formset
-
 
 class SettingKeyColumnView(View):
     def get(self, request, *args, **kwargs):
@@ -156,27 +139,33 @@ class SettingKeyColumnView(View):
     def post(self, request, *args, **kwargs):
         csv1: pd.DataFrame = pd.read_json(request.session['csv1'])
         csv2: pd.DataFrame = pd.read_json(request.session['csv2'])
-        key_column_setting_formset = forms.create_formset(
-                    forms.KeyColumnSettingForm,
-                    max_num=3
-                )
-        diff_column_form_max = util.CalcColumnCountUtility.get_max_diff_column_count(
+        # key_column_setting_formset = forms.create_formset(
+        #             forms.KeyColumnSettingForm,
+        #             max_num=3
+        #         )
+        check_diff_formset = forms.create_setting_diff_column_formset(
             csv1,
-            csv2
+            csv2,
+            request.POST
         )
-        diff_column_setting_formset = forms.create_formset(
-            forms.DiffColumnSettingForm,
-            max_num=diff_column_form_max
-        )
-        check_formset = diff_column_setting_formset(request.POST)
-        print(f"form_set.is_valid() = {check_formset.is_valid()}")
-        print(f"form_set.errors = {check_formset.errors}")
+        # check_formset = diff_column_setting_formset(request.POST)
+        # check_formset = forms.set_choices(check_formset, {
+        #     'csv1_diff_col': csv1.columns,
+        #     'csv2_diff_col': csv2.columns
+        # })
+        print(f"form_set.is_valid() = {check_diff_formset.is_valid()}")
+        print(f"form_set.errors = {check_diff_formset.errors}")
 
-        if check_formset.is_valid():
+        if check_diff_formset.is_valid():
+            key_column_setting_formset = forms.create_setting_key_column_formset(
+                csv1,
+                csv2,
+                check_diff_formset.total_form_count()
+            )
             context = {
                 'csv1': csv1,
                 'csv2': csv2,
-                'formset': form_set,
+                'formset': key_column_setting_formset,
                 'diff_column_list': [
                     'CSV1のcol1とCSV2のcol1を比較する',
                     'CSV1のcol2とCSV2のcol2を比較する',
@@ -191,9 +180,6 @@ class SettingKeyColumnView(View):
                and session.get('csv2') \
                and session.get('csv1_diff_col') \
                and session.get('csv2_diff_col')
-
-    def __create_formset(self, csv1, csv2):
-        pass
 
 
 class ConfirmView(View):
