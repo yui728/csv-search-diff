@@ -5,6 +5,7 @@
 {% block content_title %}CSVを比較する：比較項目の設定{% endblock %}
 {% block content %}
 <form method="POST" action="{% url 'apps:setting_key_column' %}" id="main-form">
+    {{ formset.management_form }}
 <sction>
     <p class="h4">読み込んだCSV</p>
     <label class="h6">CSV1</label>

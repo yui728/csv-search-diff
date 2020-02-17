@@ -1,6 +1,5 @@
 import pandas as pd
 
-
 class CalcColumnCountUtility:
     @classmethod
     def get_max_diff_column_count(cls, csv1: pd.DataFrame, csv2: pd.DataFrame):
