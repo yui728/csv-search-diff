@@ -122,10 +122,10 @@ class SettingKeyColumnViewTest(CsvSettingTestCase):
             {'form-TOTAL_FORMS': 2,
              'form-INITIAL_FORMS': 0,
              'form-MAX_NUM_FORMS': 3,
-             'form-0-csv1_diff_col': 'col3',
-             'form-1-csv1_diff_col': 'col4',
-             'form-0-csv2_diff_col': 'col3',
-             'form-1-csv2_diff_col': 'col4'}
+             'form-0-csv1_diff_col': '2',
+             'form-1-csv1_diff_col': '3',
+             'form-0-csv2_diff_col': '2',
+             'form-1-csv2_diff_col': '2'}
         )
         self.assertTemplateUsed(response, 'pages/setting-key-column.html')
 
@@ -173,17 +173,18 @@ class SettingKeyColumnViewTest(CsvSettingTestCase):
             {'form-TOTAL_FORMS': 3,
              'form-INITIAL_FORMS': 0,
              'form-MAX_NUM_FORMS': 3,
-             'form-0-csv1_diff_col': 'col1',
-             'form-1-csv1_diff_col': 'col2',
-             'form-2-csv1_diff_col': 'col3',
-             'form-3-csv1_diff_col': 'col4',
-             'form-0-csv2_diff_col': 'col1',
-             'form-1-csv2_diff_col': 'col2',
-             'form-2-csv2_diff_col': 'col3',
-             'form-3-csv2_diff_col': 'col4'
+             'form-0-csv1_diff_col': '0',
+             'form-1-csv1_diff_col': '1',
+             'form-2-csv1_diff_col': '2',
+             'form-3-csv1_diff_col': '3',
+             'form-0-csv2_diff_col': '0',
+             'form-1-csv2_diff_col': '1',
+             'form-2-csv2_diff_col': '2',
+             'form-3-csv2_diff_col': '3'
              }
         )
-        self.assertTemplateUsed(response, 'pages/setting-diff-column.html')
+        # self.assertTemplateUsed(response, 'pages/setting-diff-column.html')
+        self.assertRedirects(response, reverse('apps:setting_diff_column'))
 
     def test_setting_key_columns_post_04(self):
         """キー項目設定画面に表示する、比較項目設定の詳細を確認する"""
@@ -206,10 +207,10 @@ class SettingKeyColumnViewTest(CsvSettingTestCase):
             {'form-TOTAL_FORMS': 2,
              'form-INITIAL_FORMS': 0,
              'form-MAX_NUM_FORMS': 3,
-             'form-0-csv1_diff_col': '列1',
-             'form-1-csv1_diff_col': '列2',
-             'form-0-csv2_diff_col': '列3',
-             'form-1-csv2_diff_col': '列4'}
+             'form-0-csv1_diff_col': '0',
+             'form-1-csv1_diff_col': '1',
+             'form-0-csv2_diff_col': '2',
+             'form-1-csv2_diff_col': '3'}
         )
         self.assertTemplateUsed(response, 'pages/setting-key-column.html')
         self.assertContains(response, 'CSV1の列1とCSV2の列3を比較する')
