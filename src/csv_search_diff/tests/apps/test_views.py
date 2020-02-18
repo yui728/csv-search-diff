@@ -170,7 +170,7 @@ class SettingKeyColumnViewTest(CsvSettingTestCase):
         session.save()
         response = self.client.post(
             reverse('apps:setting_key_column'),
-            {'form-TOTAL_FORMS': 3,
+            {'form-TOTAL_FORMS': 4,
              'form-INITIAL_FORMS': 0,
              'form-MAX_NUM_FORMS': 3,
              'form-0-csv1_diff_col': '0',

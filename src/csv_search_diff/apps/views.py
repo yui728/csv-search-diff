@@ -9,7 +9,6 @@ import csv
 import _csv
 import pandas as pd
 import logging
-import copy
 from . import forms
 from . import utility as util
 
@@ -139,22 +138,11 @@ class SettingKeyColumnView(View):
     def post(self, request, *args, **kwargs):
         csv1: pd.DataFrame = pd.read_json(request.session['csv1'])
         csv2: pd.DataFrame = pd.read_json(request.session['csv2'])
-        # key_column_setting_formset = forms.create_formset(
-        #             forms.KeyColumnSettingForm,
-        #             max_num=3
-        #         )
         check_diff_formset = forms.create_setting_diff_column_formset(
             csv1,
             csv2,
             request.POST
         )
-        # check_formset = diff_column_setting_formset(request.POST)
-        # check_formset = forms.set_choices(check_formset, {
-        #     'csv1_diff_col': csv1.columns,
-        #     'csv2_diff_col': csv2.columns
-        # })
-        print(f"form_set.is_valid() = {check_diff_formset.is_valid()}")
-        print(f"form_set.errors = {check_diff_formset.errors}")
 
         if check_diff_formset.is_valid():
             key_column_setting_formset = forms.create_setting_key_column_formset(
@@ -162,14 +150,25 @@ class SettingKeyColumnView(View):
                 csv2,
                 check_diff_formset.total_form_count()
             )
+
+            csv1_diff_cols = [
+                csv1.columns[int(data.get('csv1_diff_col'))] for data in check_diff_formset.cleaned_data
+            ]
+
+            csv2_diff_cols = [
+                csv2.columns[int(data.get('csv2_diff_col'))] for data in check_diff_formset.cleaned_data
+            ]
+
+            diff_column_details = util.ColumnDetailMessageUtility.create_diff_columns_detail(
+                csv1_diff_cols,
+                csv2_diff_cols
+            )
+
             context = {
                 'csv1': csv1,
                 'csv2': csv2,
                 'formset': key_column_setting_formset,
-                'diff_column_list': [
-                    'CSV1のcol1とCSV2のcol1を比較する',
-                    'CSV1のcol2とCSV2のcol2を比較する',
-                ]
+                'diff_column_list': diff_column_details
             }
             return render(request, 'pages/setting-key-column.html', context)
         else:

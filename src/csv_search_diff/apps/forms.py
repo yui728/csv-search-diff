@@ -74,8 +74,7 @@ class KeyColumnSettingForm(forms.Form):
 # class ResultForm(forms.Form):
 
 
-def create_formset(cls, max_num, min_num=1):
-
+def create_formset(cls, max_num: int = 1, min_num: int = 1):
     return formset_factory(
         cls,
         max_num=max_num,
@@ -99,9 +98,7 @@ def create_setting_diff_column_formset(csv1: pd.DataFrame, csv2: pd.DataFrame, d
         'csv1_diff_col_choices': column_to_choices(csv1.columns),
         'csv2_diff_col_choices': column_to_choices(csv2.columns)
     }
-    # print(f'create_setting_diff_column_formset choices = {choices}')
     formset = diff_column_setting_form_set(data=data, form_kwargs=choices)
-    # print(f'create_setting_diff_column_formset formset = {formset.as_p()}')
     return formset
 
 
@@ -119,7 +116,6 @@ def create_setting_key_column_formset(csv1: pd.DataFrame, csv2: pd.DataFrame, di
         'csv1_key_col_choices': column_to_choices(csv1.columns),
         'csv2_key_col_choices': column_to_choices(csv2.columns)
     }
-    # print(f'create_setting_key_column_formset choices = {choices}')
     formset = key_column_setting_form_set(data=data, form_kwargs=choices)
     return formset
 
@@ -129,12 +125,3 @@ def column_to_choices(column):
                 (value, text) for (value, text) in enumerate(column)
             ]
 
-# def set_choices(formset: BaseFormSet, choices: dict) -> BaseFormSet:
-#     for form in formset.forms:
-#         for key, values in choices.items():
-#             form.fields[key].choices = [
-#                 (value, text) for (value, text) in enumerate(values)
-#             ]
-#
-#     print(f"formset table = {formset.as_table()}")
-#     return formset
