@@ -25,6 +25,8 @@ class CsvSettingsStaticLiveServerTestCaseForFirefox(testing.CsvSettingsStaticLiv
         options.add_argument('-headless')
         cls.selenium = webdriver.Firefox(firefox_options=options)
         cls.selenium.implicitly_wait(10)
+        cls.screenshot_manager = testing.ScreenShotManager()
+        cls.screenshot_manager.clear_screenshot_of_class()
 
     @classmethod
     def tearDownClass(cls):
@@ -580,4 +582,315 @@ class SettingDiffColumnTestCase(CsvSettingsStaticLiveServerTestCaseForFirefox):
         wait.until(EC.presence_of_element_located((By.TAG_NAME, 'title')))
 
         self.assertEquals("CSVを比較する：キー項目の設定", self.selenium.title)
+
+
+class SettingKeyColumnTestCase(CsvSettingsStaticLiveServerTestCaseForFirefox):
+    def __assert_csv_table(self, table: WebElement, expects: dict) -> None:
+        self.assertTrue(table)
+        expect_header = expects['header'] if 'header' in expects.keys() else []
+        expect_body = expects['body'] if 'body' in expects.keys() else []
+
+        self.assertTrue(table.find_elements_by_css_selector('thead > tr > th'))
+        headers = table.find_elements_by_css_selector('thead > tr > th')
+        self.assertTrue(table.find_element_by_tag_name('tbody'))
+        body = table.find_element_by_tag_name('tbody')
+
+        if expect_header:
+            for (i, header) in enumerate(headers):
+                self.assertEqual(expect_header[i], header.text)
+        else:
+            self.__logger.info(f'{__name__}: header is no check.')
+
+        if expect_body:
+            for (i, row) in enumerate(body.find_elements_by_tag_name('tr')):
+                expect_tr = expect_body[i]
+                for (j, td) in enumerate(row.find_elements_by_tag_name('td')):
+                    self.assertEqual(expect_tr[j], td.text)
+        else:
+            self.__logger.info(f'{__name__}: body is no check.')
+
+    def test_csv1_header_for_no_header(self):
+        """ヘッダーなしでアップロードしたCSV1がキー項目設定画面に表示されることを確認する"""
+        self.selenium.get('%s%s' % (self.live_server_url, '/'))
+        csv_file_path_no_header = self.csvInputDir.joinpath('csv_without_header.csv').resolve()
+        csv_file_path_with_header = self.csvInputDir.joinpath('csv_with_header.csv').resolve()
+        csv1_input = self.selenium.find_element_by_css_selector('input[name="csv1"]')
+        csv1_input.send_keys(str(csv_file_path_no_header))
+        csv2_input = self.selenium.find_element_by_css_selector('input[name="csv2"]')
+        csv2_input.send_keys(str(csv_file_path_with_header))
+        self.selenium.find_element_by_css_selector('input[name="csv1_no_header"]').click()
+        self.screenshot_manager.save_screenshot(self.selenium)
+        self.selenium.find_element_by_css_selector('button[type="submit"]').click()
+
+        wait = WebDriverWait(self.selenium, self.SERVER_RESPONSE_WAIT_SEC)
+        wait.until(EC.url_changes('%s%s' % (self.live_server_url, '/setting_diff_column/')))
+
+        # 比較項目設定画面
+        diff_column_rows = self.selenium.find_elements_by_css_selector('div.diff-cols')
+        diff_column_row = diff_column_rows[0]
+        diff_column_selects = diff_column_row.find_elements_by_tag_name('select')
+        csv1_diff_column_select = diff_column_selects[0]
+        csv2_diff_column_select = diff_column_selects[1]
+        # 選択肢の設定
+        csv1_diff_column_select.find_element_by_css_selector('option:nth-of-type(2)').click()
+        csv2_diff_column_select.find_element_by_css_selector('option:nth-of-type(2)').click()
+        self.screenshot_manager.save_screenshot(self.selenium)
+
+        next_button = self.selenium.find_element_by_id("submit_next")
+        self.assertTrue(next_button)
+        next_button.click()
+
+        wait = WebDriverWait(self.selenium, self.SERVER_RESPONSE_WAIT_SEC)
+        wait.until(EC.url_changes('%s%s' % (self.live_server_url, '/setting_key_column/')))
+        wait.until(EC.presence_of_element_located((By.TAG_NAME, 'title')))
+        self.screenshot_manager.save_screenshot(self.selenium)
+
+        tables = self.selenium.find_elements_by_tag_name('table')
+        self.assertTrue(tables)
+        self.assertTrue(2, len(tables))
+        csv1_table = tables[0]
+        self.assertTrue(csv1_table)
+        csv1_table_header = csv1_table.find_elements_by_css_selector('thead th')
+        self.assertTrue(csv1_table_header)
+        expect_headers = ['列1', '列2', '列3', '列4']
+        for (i, header_element) in enumerate(csv1_table_header):
+            self.assertEqual(expect_headers[i], header_element.text)
+        csv1_table_body = csv1_table.find_element_by_tag_name('tbody')
+        self.assertTrue(csv1_table_body)
+        expect_data = [
+            ['AAA', '1000', '1.234', '文字列1'],
+            ['BBB', '2000', '2.567', '文字列2'],
+            ['CCC', '3000', '3.987', '文字列3'],
+            ['DDD', '4000', '4.001', '文字列4']
+        ]
+        expect = {
+            'header': expect_headers,
+            'body': expect_data
+        }
+        self.__assert_csv_table(csv1_table, expect)
+
+    def test_csv1_header_for_with_header(self):
+        """ヘッダーありでアップロードしたCSV2がキー項目設定画面に表示されることを確認する"""
+        self.selenium.get('%s%s' % (self.live_server_url, '/'))
+        csv_file_path_no_header = self.csvInputDir.joinpath('csv_without_header.csv').resolve()
+        csv_file_path_with_header = self.csvInputDir.joinpath('csv_with_header.csv').resolve()
+        csv1_input = self.selenium.find_element_by_css_selector('input[name="csv1"]')
+        csv1_input.send_keys(str(csv_file_path_with_header))
+        csv2_input = self.selenium.find_element_by_css_selector('input[name="csv2"]')
+        csv2_input.send_keys(str(csv_file_path_no_header))
+        self.selenium.find_element_by_css_selector('input[name="csv2_no_header"]').click()
+        self.screenshot_manager.save_screenshot(self.selenium)
+        self.selenium.find_element_by_css_selector('button[type="submit"]').click()
+
+        wait = WebDriverWait(self.selenium, self.SERVER_RESPONSE_WAIT_SEC)
+        wait.until(EC.url_changes('%s%s' % (self.live_server_url, '/setting_diff_column/')))
+
+        # 比較項目設定画面
+        diff_column_rows = self.selenium.find_elements_by_css_selector('div.diff-cols')
+        diff_column_row = diff_column_rows[0]
+        diff_column_selects = diff_column_row.find_elements_by_tag_name('select')
+        csv1_diff_column_select = diff_column_selects[0]
+        csv2_diff_column_select = diff_column_selects[1]
+        # 選択肢の設定
+        csv1_diff_column_select.find_element_by_css_selector('option:nth-of-type(2)').click()
+        csv2_diff_column_select.find_element_by_css_selector('option:nth-of-type(2)').click()
+        self.screenshot_manager.save_screenshot(self.selenium)
+
+        next_button = self.selenium.find_element_by_id("submit_next")
+        self.assertTrue(next_button)
+        next_button.click()
+
+        wait = WebDriverWait(self.selenium, self.SERVER_RESPONSE_WAIT_SEC)
+        wait.until(EC.url_changes('%s%s' % (self.live_server_url, '/setting_key_column/')))
+        wait.until(EC.presence_of_element_located((By.TAG_NAME, 'title')))
+        self.screenshot_manager.save_screenshot(self.selenium)
+
+        tables = self.selenium.find_elements_by_tag_name('table')
+        self.assertTrue(tables)
+        self.assertTrue(2, len(tables))
+        csv1_table = tables[0]
+        self.assertTrue(csv1_table)
+        csv1_table_header = csv1_table.find_elements_by_css_selector('thead th')
+        self.assertTrue(csv1_table_header)
+        expect_headers = ['header1', 'header2', 'header3', 'header4']
+        for (i, header_element) in enumerate(csv1_table_header):
+            self.assertEqual(expect_headers[i], header_element.text)
+        csv1_table_body = csv1_table.find_element_by_tag_name('tbody')
+        self.assertTrue(csv1_table_body)
+        expect_data = [
+            ['AAA', '1000', '1.234', '文字列1'],
+            ['BBB', '2000', '2.567', '文字列2'],
+            ['CCC', '3000', '3.987', '文字列3'],
+            ['DDD', '4000', '4.001', '文字列4']
+        ]
+        expect = {
+            'header': expect_headers,
+            'body': expect_data
+        }
+        self.__assert_csv_table(csv1_table, expect)
+
+    def test_csv2_header_for_no_header(self):
+        """ヘッダーなしでアップロードしたCSV2がキー項目設定画面に表示されることを確認する"""
+        self.selenium.get('%s%s' % (self.live_server_url, '/'))
+        csv_file_path_no_header = self.csvInputDir.joinpath('csv_without_header.csv').resolve()
+        csv_file_path_with_header = self.csvInputDir.joinpath('csv_with_header.csv').resolve()
+        csv1_input = self.selenium.find_element_by_css_selector('input[name="csv1"]')
+        csv1_input.send_keys(str(csv_file_path_with_header))
+        csv2_input = self.selenium.find_element_by_css_selector('input[name="csv2"]')
+        csv2_input.send_keys(str(csv_file_path_no_header))
+        self.selenium.find_element_by_css_selector('input[name="csv2_no_header"]').click()
+        self.screenshot_manager.save_screenshot(self.selenium)
+        self.selenium.find_element_by_css_selector('button[type="submit"]').click()
+
+        wait = WebDriverWait(self.selenium, self.SERVER_RESPONSE_WAIT_SEC)
+        wait.until(EC.url_changes('%s%s' % (self.live_server_url, '/setting_diff_column/')))
+
+        # 比較項目設定画面
+        diff_column_rows = self.selenium.find_elements_by_css_selector('div.diff-cols')
+        diff_column_row = diff_column_rows[0]
+        diff_column_selects = diff_column_row.find_elements_by_tag_name('select')
+        csv1_diff_column_select = diff_column_selects[0]
+        csv2_diff_column_select = diff_column_selects[1]
+        # 選択肢の設定
+        csv1_diff_column_select.find_element_by_css_selector('option:nth-of-type(2)').click()
+        csv2_diff_column_select.find_element_by_css_selector('option:nth-of-type(2)').click()
+        self.screenshot_manager.save_screenshot(self.selenium)
+
+        next_button = self.selenium.find_element_by_id("submit_next")
+        self.assertTrue(next_button)
+        next_button.click()
+
+        wait = WebDriverWait(self.selenium, self.SERVER_RESPONSE_WAIT_SEC)
+        wait.until(EC.url_changes('%s%s' % (self.live_server_url, '/setting_key_column/')))
+        wait.until(EC.presence_of_element_located((By.TAG_NAME, 'title')))
+        self.screenshot_manager.save_screenshot(self.selenium)
+
+        tables = self.selenium.find_elements_by_tag_name('table')
+        self.assertTrue(tables)
+        self.assertTrue(2, len(tables))
+        csv2_table = tables[1]
+        self.assertTrue(csv2_table)
+        csv2_table_header = csv2_table.find_elements_by_css_selector('thead th')
+        self.assertTrue(csv2_table_header)
+        expect_headers = ['列1', '列2', '列3', '列4']
+        for (i, header_element) in enumerate(csv2_table_header):
+            self.assertEqual(expect_headers[i], header_element.text)
+        csv2_table_body = csv2_table.find_element_by_tag_name('tbody')
+        self.assertTrue(csv2_table_body)
+        expect_data = [
+            ['AAA', '1000', '1.234', '文字列1'],
+            ['BBB', '2000', '2.567', '文字列2'],
+            ['CCC', '3000', '3.987', '文字列3'],
+            ['DDD', '4000', '4.001', '文字列4']
+        ]
+        expect = {
+            'header': expect_headers,
+            'body': expect_data
+        }
+        self.__assert_csv_table(csv2_table, expect)
+
+    def test_csv2_header_for_with_header(self):
+        """ヘッダーありでアップロードしたCSV2がキー項目設定画面に表示されることを確認する"""
+        self.selenium.get('%s%s' % (self.live_server_url, '/'))
+        csv_file_path_no_header = self.csvInputDir.joinpath('csv_without_header.csv').resolve()
+        csv_file_path_with_header = self.csvInputDir.joinpath('csv_with_header.csv').resolve()
+        csv1_input = self.selenium.find_element_by_css_selector('input[name="csv1"]')
+        csv1_input.send_keys(str(csv_file_path_no_header))
+        csv2_input = self.selenium.find_element_by_css_selector('input[name="csv2"]')
+        csv2_input.send_keys(str(csv_file_path_with_header))
+        self.selenium.find_element_by_css_selector('input[name="csv1_no_header"]').click()
+        self.screenshot_manager.save_screenshot(self.selenium)
+        self.selenium.find_element_by_css_selector('button[type="submit"]').click()
+
+        wait = WebDriverWait(self.selenium, self.SERVER_RESPONSE_WAIT_SEC)
+        wait.until(EC.url_changes('%s%s' % (self.live_server_url, '/setting_diff_column/')))
+
+        # 比較項目設定画面
+        diff_column_rows = self.selenium.find_elements_by_css_selector('div.diff-cols')
+        diff_column_row = diff_column_rows[0]
+        diff_column_selects = diff_column_row.find_elements_by_tag_name('select')
+        csv1_diff_column_select = diff_column_selects[0]
+        csv2_diff_column_select = diff_column_selects[1]
+        # 選択肢の設定
+        csv1_diff_column_select.find_element_by_css_selector('option:nth-of-type(2)').click()
+        csv2_diff_column_select.find_element_by_css_selector('option:nth-of-type(2)').click()
+        self.screenshot_manager.save_screenshot(self.selenium)
+
+        next_button = self.selenium.find_element_by_id("submit_next")
+        self.assertTrue(next_button)
+        next_button.click()
+
+        wait = WebDriverWait(self.selenium, self.SERVER_RESPONSE_WAIT_SEC)
+        wait.until(EC.url_changes('%s%s' % (self.live_server_url, '/setting_key_column/')))
+        wait.until(EC.presence_of_element_located((By.TAG_NAME, 'title')))
+        self.screenshot_manager.save_screenshot(self.selenium)
+
+        tables = self.selenium.find_elements_by_tag_name('table')
+        self.assertTrue(tables)
+        self.assertTrue(2, len(tables))
+        csv2_table = tables[1]
+        self.assertTrue(csv2_table)
+        csv2_table_header = csv2_table.find_elements_by_css_selector('thead th')
+        self.assertTrue(csv2_table_header)
+        expect_headers = ['header1', 'header2', 'header3', 'header4']
+        for (i, header_element) in enumerate(csv2_table_header):
+            self.assertEqual(expect_headers[i], header_element.text)
+        csv2_table_body = csv2_table.find_element_by_tag_name('tbody')
+        self.assertTrue(csv2_table_body)
+        expect_data = [
+            ['AAA', '1000', '1.234', '文字列1'],
+            ['BBB', '2000', '2.567', '文字列2'],
+            ['CCC', '3000', '3.987', '文字列3'],
+            ['DDD', '4000', '4.001', '文字列4']
+        ]
+        expect = {
+            'header': expect_headers,
+            'body': expect_data
+        }
+        self.__assert_csv_table(csv2_table, expect)
+
+    def test_diff_key_column_details(self):
+        """比較項目詳細が表示されることを確認する"""
+        pass
+
+    def test_csv1_key_column_for_no_header(self):
+        """ヘッダーなしでアップロードしたCSV1の列名がキー項目のCSV1に表示されることを確認する"""
+        pass
+
+    def test_csv1_key_column_for_with_header(self):
+        """ヘッダーありでアップロードしたCSV1の列名がキー項目のCSV1に表示されることを確認する"""
+        pass
+
+    def test_csv2_key_column_for_no_header(self):
+        """ヘッダーなしでアップロードしたCSV2の列名がキー項目のCSV2に表示されることを確認する"""
+        pass
+
+    def test_csv2_key_column_for_with_header(self):
+        """ヘッダーありでアップロードしたCSV2の列名がキー項目のCSV2に表示されることを確認する"""
+        pass
+
+    def test_key_columns_setting_for_view_details(self):
+        """キー項目のCSV1とCSV2を選択すると、キー項目の詳細を表示することを確認する"""
+        pass
+
+    def test_click_add_row_button(self):
+        """「項目を追加する」ボタンをクリックすると、キー項目設定のフォームが1行追加されることを確認する"""
+        pass
+
+    def test_click_delete_row_button_at_more_2_rows(self):
+        """キー項目設定フォームが2行以上の場合に「項目を削除する」ボタンをクリックすると、キー項目設定のフォームが1行削除されることを確認する"""
+        pass
+
+    def test_click_delete_row_button_at_1_row(self):
+        """キー項目設定フォームが1行の場合に「項目を削除する」ボタンをクリックすると、キー項目設定のフォームが削除されないことを確認する"""
+        pass
+
+    def test_click_back_button(self):
+        """「戻る」ボタンをクリックすると、比較項目設定画面に遷移することを確認する"""
+        pass
+
+    def test_click_next_button(self):
+        """「次へ」ボタンをクリックすると、確認画面に遷移することを確認する"""
+        pass
+
 
