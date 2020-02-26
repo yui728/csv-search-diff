@@ -673,3 +673,6 @@ class SettingDiffColumnTestCase(CsvSettingsStaticLiveServerTestCaseForChrome):
         self.assertEquals("CSVを比較する：キー項目の設定", self.selenium.title)
         self.screenshot_manager.save_screenshot(self.selenium)
 
+# class SettingKeyColumnTestCase(CsvSettingsStaticLiveServerTestCaseForChrome):
+#
+

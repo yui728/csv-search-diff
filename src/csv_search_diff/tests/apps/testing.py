@@ -3,8 +3,10 @@ from . import test_settings
 import time
 from pathlib import Path
 from selenium.webdriver.remote.webdriver import WebDriver
+from selenium.webdriver.remote.webelement import WebElement
 import inspect
 import logging
+import math
 
 
 class CsvSettingsStaticLiverServerTestCase(StaticLiveServerTestCase):
@@ -43,13 +45,27 @@ class ScreenShotManager:
             if path.is_file():
                 path.unlink()
 
-    def save_screenshot(self, web_driver: WebDriver, call_frame_depth: int = 1):
+    def save_screenshot(self, web_driver: WebDriver, element: WebElement = None, call_frame_depth: int = 1):
+        if element is None:
+            self.save_screenshot_for_fullsize(web_driver, call_frame_depth=call_frame_depth+1)
+        else:
+            self.save_screenshot_for_element(element, call_frame_depth=call_frame_depth+1)
+
+    def save_screenshot_for_element(self, web_element: WebElement, call_frame_depth: int):
+        screenshot_path = self.__get_screenshot_filepath(call_frame_depth)
+        web_element.screenshot(screenshot_path)
+
+    def save_screenshot_for_fullsize(self, web_driver: WebDriver, call_frame_depth: int = 1):
+        screen_shot_path = self.__get_screenshot_filepath(call_frame_depth)
+        main_element = web_driver.find_element_by_tag_name('html')
+        main_element.screenshot(screen_shot_path)
+
+    def __get_screenshot_filepath(self, call_frame_depth: int) -> str:
         fmt: str = '{0:s}_{1:s}_{2:0>2d}.jpg'
         glob_pattern: str = '{0:s}_{1:s}_[0-9][0-9].jpg'
-        # logger = logging.getLogger(__name__)
 
         try:
-            caller_frame = self.__get_caller_frame_info(call_frame_depth)
+            caller_frame = self.__get_caller_frame_info(call_frame_depth + 1)
             caller_class_name = self.__get_caller_class_name(caller_frame)
             caller_function_name = self.__get_caller_function_name(caller_frame)
         finally:
@@ -59,10 +75,9 @@ class ScreenShotManager:
         index_num = len(list(files)) + 1
 
         screen_shot_path = str(
-                self.screenshot_dir.joinpath(
-                    fmt.format(caller_class_name, caller_function_name, index_num)))
-        # logger.debug(screen_shot_path)
-        web_driver.save_screenshot(screen_shot_path)
+            self.screenshot_dir.joinpath(
+                fmt.format(caller_class_name, caller_function_name, index_num)))
+        return screen_shot_path
 
     def __get_caller_frame_info(self, depth: int = 0):
         frame_records = inspect.stack()
