@@ -6,8 +6,8 @@
 {% block content %}
 <form method="POST" action="{% url 'apps:confirm' %}">
     {{ formset.management_form }}
-<sction>
-    <p class="h4">読み込んだCSV</p>
+<section>
+    <h4>読み込んだCSV</h4>
     <label class="h6">CSV1</label>
     <div class="table-responsive-sm">
         <table class="table table-bordered">
@@ -58,15 +58,15 @@
             {% endfor %}
         </table>
     </div>
-</sction>
-<setion>
-    <p class="h4">比較する項目</p>
+</section>
+<section>
+    <h4>比較する項目</h4>
     {% for diff_column in diff_column_list %}
     <p>{{ diff_column }}</p>
     {% endfor %}
-</setion>
+</section>
 <section>
-    <p class="h4">キーにする項目</p>
+    <h4>キーにする項目</h4>
     <div class="row">
         <label class="col-sm h6">CSV1</label>
         <label class="col-sm h6">CSV2</label>
@@ -82,8 +82,8 @@
     </div>
     {% endfor %}
     <div class="form-group row justify-content-around" role="group">
-        <button type="button" class="btn btn-outline-dark col-sm" id="add_diff_row">項目を追加する</button>
-        <button type="button" class="btn btn-outline-dark col-sm" id="delete_diff_row">項目を削除する</button>
+        <button type="button" class="btn btn-outline-dark col-sm" id="add_key_row">項目を追加する</button>
+        <button type="button" class="btn btn-outline-dark col-sm" id="delete_key_row">項目を削除する</button>
     </div>
     <div class="form-group row justify-content-center">
         <div>
@@ -94,4 +94,14 @@
 </section>
     {% csrf_token %}
 </form>
+<form method="POST" action="{% url 'apps:setting_diff_column' %}" id="back-form">
+    {% for field in back_form %}
+    {{ field.as_hidden }}
+    {% endfor %}
+    {% csrf_token %}
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/setting-key-column.js' %}"></script>
 {% endblock %}

@@ -79,17 +79,21 @@ def create_formset(cls, max_num: int = 1, min_num: int = 1):
         cls,
         max_num=max_num,
         min_num=min_num,
-        extra=1,
+        extra=0,
         validate_max=True,
         validate_min=True
     )
 
 
 def create_setting_diff_column_formset(csv1: pd.DataFrame, csv2: pd.DataFrame, data: dict = None):
-    diff_column_max = util.CalcColumnCountUtility.get_max_diff_column_count(
-        csv1,
-        csv2
-    )
+    if data is not None:
+        diff_column_max = util.CalcColumnCountUtility.get_max_diff_column_count(
+            csv1,
+            csv2
+        )
+    else:
+        diff_column_max = 1
+
     diff_column_setting_form_set = create_formset(
         DiffColumnSettingForm,
         max_num=diff_column_max
@@ -102,12 +106,17 @@ def create_setting_diff_column_formset(csv1: pd.DataFrame, csv2: pd.DataFrame, d
     return formset
 
 
-def create_setting_key_column_formset(csv1: pd.DataFrame, csv2: pd.DataFrame, diff_key_column_count: int,data: dict = None):
-    key_column_max = util.CalcColumnCountUtility.get_max_key_column_count(
-        csv1,
-        csv2,
-        diff_key_column_count
-    )
+def create_setting_key_column_formset(csv1: pd.DataFrame, csv2: pd.DataFrame,
+                                      diff_key_column_count: int, data: dict = None):
+    if data is not None:
+        key_column_max = util.CalcColumnCountUtility.get_max_key_column_count(
+            csv1,
+            csv2,
+            diff_key_column_count
+        )
+    else:
+        key_column_max = 1
+
     key_column_setting_form_set = create_formset(
         KeyColumnSettingForm,
         max_num=key_column_max
